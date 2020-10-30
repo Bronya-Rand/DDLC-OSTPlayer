@@ -5,8 +5,8 @@ default soundtrack_position = 0.0
 default soundtrack_duration = 0.0
 default time_position = 0.0 # Temp Position
 default time_duration = 3.0 # Temp Duration
-default title_size = 40 # Default Size (Temp)
-default title_offset = 15 # Default Position (Temp)
+default title_size = 40 # Default Font Size
+default title_offset = 15 # Default Font Y Position 
 default author_size = 25 
 default audio.current_soundrack_pause = False
 default music_was_muted_before_soundtrack_player_opened = False
@@ -345,7 +345,7 @@ init python:
         if title is None: # checks if the file has a title
             title = "Unknown OGG File " + str(y)
         if artist is None: # checks if the file has an artist 
-            author = "Unknown Artist"
+            artist = "Unknown Artist"
         if cover_formats is None: # checks if it has a cover
             description = "Non-Metadata OGG"
             cover_formats = False # tells the class there is no cover art
@@ -367,7 +367,7 @@ init python:
             time = res,
             priority = priorityScan,
             byteTime = sec,
-            author = author,
+            author = artist,
             description = description,
             cover_art = cover_formats
         )
