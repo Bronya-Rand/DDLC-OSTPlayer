@@ -363,11 +363,11 @@ init python:
         oggList[y] = soundtrack(
             name = title,
             full_name = title,
+            author = artist,
             path = path,
             time = res,
             priority = priorityScan,
             byteTime = sec,
-            author = artist,
             description = description,
             cover_art = cover_formats
         )
@@ -394,8 +394,8 @@ init python:
         mp3List[y] = soundtrack(
             name = title,
             full_name = title,
-            path = path,
             author = artist,
+            path = path,
             time = res,
             priority = priorityScan,
             byteTime = sec,
