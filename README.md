@@ -1,6 +1,8 @@
 # DDLC-OSTPlayer
 A heavily revamped version of Nikso's Soundtrack Player for DDLC.
 
+![Sample preview](https://cdn.discordapp.com/attachments/373669030747308032/762123533052149760/Preview.png)
+
 **DISCLAIMER:** This is not afiliated or endorsed by Team Salvato or Nikso. All support questions for this version, please address to GanstaKingofSA. This is semi-<ins>beta</ins>, meaning possible bugs may exist. Please report them to me be fixed.
 
 ## Credits
@@ -13,7 +15,7 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC.
 The Scattered Stars Logo in `Wake Up Unchanged` is not free to use but is only allowed in this build as a showcase display to the soundtrack player. If you plan to use this, remove it in your final build.
 
 ## What does this do?
-This allows the user to play the soundtrack of the songs in mods outside the main storyline.
+This allows the user to play the soundtrack of mods outside the main story, sideload actual music to play along with the mod OST or mod authors automatically adding their songs and having them display on the player.
 
 ## What does this version improve on?
 - Added MP3 compatibility to be read and played
@@ -57,6 +59,9 @@ Set organizeAZ to True
 
 ## Can the organizations work together?
 Yes.
+
+* Preview of Organization
+![Organization preview](https://cdn.discordapp.com/attachments/373669030747308032/762177096411643904/Untitled-1.png)
 
 ## Why is there a file called `tinytag.py` in `python-packages`?
 This handles the metadata of songs sideloaded or those that have metadata in the game.
