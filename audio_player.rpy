@@ -1,13 +1,12 @@
 #init -1 default soundtracks = [your_reality, your_reality_2]
 default current_soundtrack = False
-default soundtrack_time = False
 default soundtrack_position = 0.0
 default soundtrack_duration = 0.0
-default time_position = 0.0 # Temp Position
-default time_duration = 3.0 # Temp Duration
-default title_size = 40 # Default Font Size
+default time_position = 0.0 # Music Position (Temp Var)
+default time_duration = 3.0 # Music Duration (Temp Var)
+default title_size = 40 # Default Title Font Size
 default title_offset = 15 # Default Font Y Position 
-default author_size = 25 
+default author_size = 25  # Default Author Font Size
 default audio.current_soundrack_pause = False
 default music_was_muted_before_soundtrack_player_opened = False
 define organizeAZ = False
@@ -68,6 +67,9 @@ label exit_loop:
     $ renpy.full_restart()
 
 screen music_player:
+
+    tag menu
+
     add "game_menu_bg"
     add "gui/overlay/main_menu.png"
     side "c l":
