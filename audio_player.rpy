@@ -105,18 +105,18 @@ screen music_player:
 
         hbox:
             style "play_pause_button_hbox"
-#            imagebutton:
-#                idle "mod_assets/music_player/backward.png"
-#                action [Function(current_music_forward(-15.0)), Play("music_player", audio.current_soundrack_pause, selected = True)]
+            imagebutton:
+                idle "mod_assets/music_player/backward.png"
+                action [SensitiveIf(renpy.music.is_playing(channel = 'music_player')), Function(current_music_backward), Jump("time_loop")]
             imagebutton:
                 idle "mod_assets/music_player/play.png"
                 action [SensitiveIf(renpy.music.is_playing(channel = 'music_player') == False), Play("music_player", audio.current_soundrack_pause, selected = True, fadein=2.0), Jump("time_loop")]
             imagebutton:
                 idle "mod_assets/music_player/pause.png"
                 action [SensitiveIf(renpy.music.is_playing(channel = 'music_player')), Function(current_music_pause)]
-#             imagebutton:
-#                 idle "mod_assets/music_player/forward.png"
-#                 action [Function(current_music_forward(15.0)), Play("music_player", audio.current_soundrack_pause, selected = True)]
+            imagebutton:
+                idle "mod_assets/music_player/forward.png"
+                action [SensitiveIf(renpy.music.is_playing(channel = 'music_player')), Function(current_music_forward), Jump("time_loop")]
 
         #if renpy.music.is_playing(channel = 'music_player'):
             #bar value AudioPositionValue(channel=u'music_player', update_interval=0.01) style "music_player_time_bar"
@@ -155,7 +155,7 @@ screen music_player:
         if current_soundtrack.description:
             viewport id "desc":
                 mousewheel True
-                xpos 510
+                xpos 640
                 ypos 520
                 child_size (700, None)
                 style "music_player_description_viewport"
@@ -226,7 +226,7 @@ style music_player_song_author_text:
 
 #style for viewport where description shows
 style music_player_description_viewport:
-    xsize 700
+    xsize 600
     ysize 200
 
 #style for description text
@@ -285,19 +285,37 @@ init python:
         #renpy.show_screen("music_player")
         current_soundtrack = False      
     
-#    def current_music_forward(time_offset):
-#        if renpy.music.is_playing(channel = 'music_player'):
-#            current_music_pause(time_offset = time_offset)
-#            if soundtrack_position is not None:
-#                renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
-#        else:
-#            global soundtrack_position
-#            if soundtrack_position is not None:
-#                soundtrack_position = soundtrack_position + time_offset
-#                audio.current_soundrack_pause = "<from "+str(soundtrack_position + time_offset) +">"+current_soundtrack.path
-#            else:
-#                pass
-#                audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+    def current_music_forward(time_offset = 0.0):
+        global soundtrack_position
+        global soundtrack_duration
+        global time_position
+        soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
+        soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
+        if soundtrack_position > soundtrack_duration:
+            soundtrack_position = soundtrack_duration
+        if soundtrack_position is not None:
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position + time_offset) +">"+current_soundtrack.path
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
+        else:
+            pass
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
+
+    def current_music_backward(time_offset = 0.0):
+        global soundtrack_position
+        global soundtrack_duration
+        global time_position
+        soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
+        if soundtrack_position < 0:
+            soundtrack_position = 0
+        soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
+        if soundtrack_position is not None:
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position + time_offset) +">"+current_soundtrack.path
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
+        else:
+            pass
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
 
     class soundtrack:
         def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, time = False, byteTime = False, description = False, cover_art = False):

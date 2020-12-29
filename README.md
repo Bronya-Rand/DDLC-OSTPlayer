@@ -18,11 +18,12 @@ The Scattered Stars Logo in `Wake Up Unchanged` is not free to use but is only a
 This allows the user to play the soundtrack of mods outside the main story, sideload actual music to play along with the mod OST or mod authors automatically adding their songs and having them display on the player.
 
 ## What does this version improve on?
-- Added MP3 compatibility to be read and played
-- Improved Music Progress Capability and music player aesthetic
-- Dynamic title and font size changes (sort of) and Dynamic Cover Art Scaling (no need to descale art to 350x350)
-- Metadata Support for songs
-- Sideloading songs from your playlist to a directory if available in a mod
+- Added MP3 compatibility to be read and played.
+- Improved music progress capability and music player aesthetic
+- Dynamic title and font size changes (sort of) and Dynamic Cover Art Scaling (no need to descale art to 350x350, scale it even higher!).
+- Metadata support for songs.
+- Sideloading songs from your playlist to a directory if available in a mod.
+- Forward and Rewind back a song in progress.
 
 ## What do I need to run this?
 1. Copy of DDLC (New Blank Copy from [DDLC.moe](https://ddlc.moe)
@@ -65,9 +66,6 @@ Yes.
 
 ## Why is there a file called `tinytag.py` in `python-packages`?
 This handles the metadata of songs sideloaded or those that have metadata in the game.
-
-## Why is the menu buggy? I got a error for pressing nothing?
-Current bug with the current screen by Nikso's Player though do report them to me still to be fixed.
 
 ## How do I add a description to a metadata file to explain my song?
 Right-click your song, Select Properties -> Details, Double-Click the Box near Comments and type it in
