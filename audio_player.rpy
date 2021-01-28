@@ -59,7 +59,7 @@ label time_loop:
             author_size = 21
         if time_position == 0.0:
             audio.current_soundrack_pause = current_soundtrack.path
-        renpy.pause(int(0.20)) # stops the loop for 1/3rd second
+        renpy.pause(0.20) # stops the loop for 1/3rd second
     jump time_loop #re-calls var
 
 label exit_loop:
