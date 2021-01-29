@@ -95,13 +95,11 @@ screen music_player:
                     else:
                         action [SetVariable("current_soundtrack", st), Play("music_player", st.path), Jump("time_loop")]
 
-
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
     if current_soundtrack:
         if current_soundtrack.cover_art:
-            add current_soundtrack.cover_art at cover_art_fade (500, 200)
-
+            add current_soundtrack.cover_art at cover_art_fade(500, 200)
 
         hbox:
             style "play_pause_button_hbox"
@@ -122,8 +120,9 @@ screen music_player:
             #bar value AudioPositionValue(channel=u'music_player', update_interval=0.01) style "music_player_time_bar"
         #else:
             #bar value StaticValue(value = soundtrack_position, range = soundtrack_duration) style "music_player_time_bar"
-
-        bar value StaticValue(value = time_position, range = time_duration) style "music_player_time_bar" # new time bar responsible for progress
+        
+        bar value AdjustableAudioPositionValue(channel='music_player', update_interval=0.20, soundtrack=current_soundtrack) style "music_player_time_bar"
+        #bar value StaticValue(value = time_position, range = time_duration) style "music_player_time_bar" # new time bar responsible for progress
 
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
@@ -179,6 +178,11 @@ screen music_player:
         align (0.045,0.95)
         #hides the screen, unmutes music channel and stops music on music_player channel
         action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
+
+    text "OST-Player v1.21":
+        xalign 1.0 yalign 1.0
+        xoffset -10 yoffset -10
+        style "main_menu_version"
 
 #transform for the cover art
 transform cover_art_fade(x,y):
@@ -257,6 +261,47 @@ init python:
     from tinytag import TinyTag # imports Tinytag
     import os, glob, time, re # imports other needed packages
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
+
+    @renpy.pure
+    class AdjustableAudioPositionValue(BarValue):
+        def __init__(self, channel='music_player', update_interval=0.20, soundtrack=None):
+            self.channel = channel
+            self.max_offset = 5.0
+            self.soundtrack = soundtrack
+            self.update_interval = update_interval
+            self.old_pos = 0.0
+            self.adjustment = None
+ 
+        def get_pos_duration(self):
+            pos = renpy.music.get_pos(self.channel) or 0.0
+            duration = self.soundtrack.byteTime
+ 
+            return pos, duration
+ 
+        def get_adjustment(self):
+            pos, duration = self.get_pos_duration()
+            self.adjustment = ui.adjustment(value=pos, range=duration, changed=self.set_pos, adjustable=True)
+            return self.adjustment
+ 
+        def set_pos(self, value):
+            if not isinstance(self.soundtrack, soundtrack):
+                return
+ 
+            if value >= self.adjustment.range - self.max_offset / 2:
+                return
+ 
+            if abs(value - self.old_pos) > self.max_offset:
+                renpy.play("<from {}>".format(value) + self.soundtrack.path, self.channel)
+ 
+        def periodic(self, st):
+ 
+            pos, duration = self.get_pos_duration()
+            if pos and pos <= duration:
+                self.adjustment.set_range(duration)
+                self.adjustment.change(pos)
+                self.old_pos = pos
+ 
+            return self.update_interval
 
     # Converts the time to a readable time
     def convert_time(x):
@@ -353,7 +398,7 @@ init python:
                 cover_formats=".png" # set image format to png
             altAlbum = re.sub(r"(\[|\])",'', tags.album) # converts problematic symbols to nothing i.e Emotion [Deluxe] to Emotion Deluxe
                 
-            with open(config.gamedir + '/track/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
+            with open(gamedir + '/track/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
                 f.write(image_data)
             return tags.title, tags.artist, res, sec, altAlbum, cover_formats, tags.album, tags.comment
         except TypeError:
@@ -421,11 +466,26 @@ init python:
             byteTime = sec,
             description = description,
             cover_art = cover_formats
-        )       
+        )
+    
+    gamedir = config.gamedir.replace('\\', '/')
+
+    renpyFileList = renpy.list_files(common=False)
+    trackFileName = []
+    trackFilePath = []
+    for contents in renpyFileList:
+        if contents.startswith("track/"):
+            temp = re.sub(r"( - | )", " ", contents)
+            trackFileName.append(temp)
+            trackFilePath.append(contents)
+    
+    for tracks in range(len(trackFileName)):
+        try: renpy.file(gamedir + '/' + trackFileName[tracks])
+        except: open(gamedir + '/' + trackFileName[tracks], "wb").write(renpy.file(trackFilePath[tracks]).read())
 
     # checks if a mp3 available in pointed directory
-    if glob.glob(config.gamedir + '/track/*.mp3'):
-        mp3List = glob.glob(config.gamedir + '/track/*.mp3') # lists out all songs in mp3
+    if glob.glob(gamedir + '/track/*.mp3'):
+        mp3List = glob.glob(gamedir + '/track/*.mp3') # lists out all songs in mp3
         mp3ListLength = len(mp3List) # grabs total found of the list mp3
         for y in range(mp3ListLength):
             path = mp3List[y].replace("\\", "/") # changes path to be python path
@@ -465,7 +525,6 @@ init python:
         cover_art = "mod_assets/music_player/cover/cover.png"
     )
 
-    
     # adds instances of soundtrack class to soundtracks list
     soundtracks = []
     import gc
@@ -477,4 +536,3 @@ init python:
         soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.name)
     if organizePriority:
         soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.priority)
-
