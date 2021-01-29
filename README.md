@@ -27,19 +27,17 @@ This allows the user to play the soundtrack of mods outside the main story, side
 
 ## What do I need to run this?
 1. Copy of DDLC (New Blank Copy from [DDLC.moe](https://ddlc.moe)
-2. This ZIP [file](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases) with `audio_player.rpy`, `mod_assets` and `python-packages`
-   * If you don't have these, please re-download the ZIP.
-   * If all you are missing is `mod_assets`, copy the one from Nikso's ZIP **but** delete the `audio_player.rpy` file from within it unless you already replaced it with this version.
-   * If you are missing `python-packages`, you can either re-download the ZIP or run the command below in Command Prompt/Terminal/Powershell. Make sure Python 2.7 is installed on your system and are pointed at the base directory of the game.
-      
-        > pip install --target game/python-packages tinytag
+2. This ZIP [file](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases) with the `game` folder inside.
+> If you don't have it, but see `mod_assets`, `python-packages` and `audio_player.rpy` in it, you are still fine. 
 
-3. (Optional) Custom Music in a folder called `track` in the `game` folder
+**Note:** If you already have Nikso's Audio Player installed in your mod and are upgrading to this one, copy the `audio_player.rpy` and `python-packages` to the game folder **and** delete the `audio_player.rpy` file from within within `mod_assets`.
+
+3. **(Optional)** Custom Music in a folder called `track` in the `game` folder
     * You can change this folder name or path to something else if you like. If you plan to do so, look at lines `336`, `353`, `384`, `407`, `408`, `417`, and `418` and change their respective paths to your new location.
 
 ## How do I install this?
-* Drop everything in this ZIP to the game folder. 
-    * If you are running Nikso's Player and installing this, drop `audio_player.rpy` to the `mod_assets` folder and click `Replace` if prompted.
+* Drop all the contents in this ZIP file to the base folder where DDLC.exe/DDLC.sh is.
+> If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun` and drop the ZIP file contents in there.
 
 ## How do I access the player?
 Copy this line to screens.rpy under lines `443-478` and restart DDLC.
@@ -68,14 +66,14 @@ Yes.
 This handles the metadata of songs sideloaded or those that have metadata in the game.
 
 ## How do I add a description to a metadata file to explain my song?
-Right-click your song, Select Properties -> Details, Double-Click the Box near Comments and type it in
-* Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music player, or [MusicBrainz Picard](https://picard.musicbrainz.org/) and find your song.
+Right-click your song, Select Properties -> Details, Double-Click the Box near Comments and type it in.
+Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music player, or [MusicBrainz Picard](https://picard.musicbrainz.org/) and find your song.
   * For MusicBee: Right-Click your song within the player, select `Edit` and edit away the info you want, then click `Save`.
   * For MusicBrainz Picard: Add your song to Picard, select it, right-click the rectangle box that has 3 columns, select `Add New Tag` and type `comment`. Select `comment` and there should be a blank box in the box area below. Double-click it and edit away the info you want to add, then click `Save` and press the `Save` button near `Info`.
 
 ## How do I add metadata info?
-Right-click your song, Select Properties -> Details, and fill the blank boxes you can
-* Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music player, or [MusicBrainz Picard](https://picard.musicbrainz.org/) and find your song.
+Right-click your song, Select Properties -> Details, and fill the blank boxes you can.
+Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music player, or [MusicBrainz Picard](https://picard.musicbrainz.org/) and find your song.
   * For MusicBee: Right-Click your song within the player, select `Edit` and edit away the info you want, then click `Apply` then `OK`.
   * For MusicBrainz Picard: Add your song to Picard, select it, right-click the rectangle box that has 3 columns, select `Add New Tag`, select the tags you want to add like `Title`, `Artist`, `Comment`, `Album`, etc. There should be a blank box in the box area below, double-click it and edit away the info you want to add, then click `Save` and press the `Save` button near `Info`.
 
