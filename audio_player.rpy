@@ -12,6 +12,7 @@ default music_was_muted_before_soundtrack_player_opened = False
 define organizeAZ = False
 define organizePriority = True
 define priorityScan = 2
+define ostVersion = "1.22"
 
 label music_player:
     call screen music_player()
@@ -115,14 +116,24 @@ screen music_player:
             imagebutton:
                 idle "mod_assets/music_player/forward.png"
                 action [SensitiveIf(renpy.music.is_playing(channel = 'music_player')), Function(current_music_forward), Jump("time_loop")]
+        hbox:
+            style "music_options_hbox"
+            imagebutton:
+                idle ConditionSwitch("organizeAZ", "mod_assets/music_player/A-ZOn.png", "True", "mod_assets/music_player/A-Z.png")
+                action [ToggleVariable("organizeAZ", False, True), Function(resort)]
+            imagebutton:
+                idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
+                action [ToggleVariable("organizePriority", False, True), Function(resort)]
+            # imagebutton:
+            #     idle "mod_assets/music_player/refreshList.png"
+            #     action [Function(refresh)]
 
         #if renpy.music.is_playing(channel = 'music_player'):
             #bar value AudioPositionValue(channel=u'music_player', update_interval=0.01) style "music_player_time_bar"
         #else:
             #bar value StaticValue(value = soundtrack_position, range = soundtrack_duration) style "music_player_time_bar"
         
-        bar value AdjustableAudioPositionValue(channel='music_player', update_interval=0.20, soundtrack=current_soundtrack) style "music_player_time_bar"
-        #bar value StaticValue(value = time_position, range = time_duration) style "music_player_time_bar" # new time bar responsible for progress
+        bar value StaticValue(value = time_position, range = time_duration) style "music_player_time_bar" # new time bar responsible for progress
 
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
@@ -179,7 +190,7 @@ screen music_player:
         #hides the screen, unmutes music channel and stops music on music_player channel
         action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
 
-    text "OST-Player v1.21":
+    text "OST-Player v[ostVersion]":
         xalign 1.0 yalign 1.0
         xoffset -10 yoffset -10
         style "main_menu_version"
@@ -195,6 +206,10 @@ transform cover_art_fade(x,y):
 #play and pause button position
 style play_pause_button_hbox:
     pos (335, 520)
+    spacing 25
+
+style music_options_hbox:
+    pos (335, 560)
     spacing 25
 
 style l_default: # default responsible for other l_ info
@@ -259,49 +274,8 @@ style music_player_viewport:
 
 init python:
     from tinytag import TinyTag # imports Tinytag
-    import os, glob, time, re # imports other needed packages
+    import os, glob, time, re, gc # imports other needed packages
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
-
-    @renpy.pure
-    class AdjustableAudioPositionValue(BarValue):
-        def __init__(self, channel='music_player', update_interval=0.20, soundtrack=None):
-            self.channel = channel
-            self.max_offset = 5.0
-            self.soundtrack = soundtrack
-            self.update_interval = update_interval
-            self.old_pos = 0.0
-            self.adjustment = None
- 
-        def get_pos_duration(self):
-            pos = renpy.music.get_pos(self.channel) or 0.0
-            duration = self.soundtrack.byteTime
- 
-            return pos, duration
- 
-        def get_adjustment(self):
-            pos, duration = self.get_pos_duration()
-            self.adjustment = ui.adjustment(value=pos, range=duration, changed=self.set_pos, adjustable=True)
-            return self.adjustment
- 
-        def set_pos(self, value):
-            if not isinstance(self.soundtrack, soundtrack):
-                return
- 
-            if value >= self.adjustment.range - self.max_offset / 2:
-                return
- 
-            if abs(value - self.old_pos) > self.max_offset:
-                renpy.play("<from {}>".format(value) + self.soundtrack.path, self.channel)
- 
-        def periodic(self, st):
- 
-            pos, duration = self.get_pos_duration()
-            if pos and pos <= duration:
-                self.adjustment.set_range(duration)
-                self.adjustment.change(pos)
-                self.old_pos = pos
- 
-            return self.update_interval
 
     # Converts the time to a readable time
     def convert_time(x):
@@ -381,7 +355,13 @@ init python:
             #description of soundtrack
             self.description = description
             #path to the cover art image
-            self.cover_art = cover_art  
+            if cover_art == False:
+                self.cover_art = "mod_assets/music_player/nocover.png"
+            else:
+                self.cover_art = cover_art  
+
+        def __del__(self):
+            print "Object cleaned"
         
     # grabs info from the mp3/ogg (and cover if available)
     def get_info(path, tags):
@@ -398,11 +378,10 @@ init python:
                 cover_formats=".png" # set image format to png
             altAlbum = re.sub(r"(\[|\])",'', tags.album) # converts problematic symbols to nothing i.e Emotion [Deluxe] to Emotion Deluxe
                 
-            with open(gamedir + '/track/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
+            with open(gamedir + '/track/covers/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
                 f.write(image_data)
             return tags.title, tags.artist, res, sec, altAlbum, cover_formats, tags.album, tags.comment
         except TypeError:
-            pass
             return tags.title, tags.artist, res, sec, None, None, tags.album, tags.comment
     
     # makes a ogg class for all ogg files
@@ -413,9 +392,13 @@ init python:
             artist = "Unknown Artist"
         if cover_formats is None: # checks if it has a cover
             description = "Non-Metadata OGG"
-            cover_formats = False # tells the class there is no cover art
+            cover_formats = "mod_assets/music_player/nocover.png" # tells the class there is no cover art
         else:
-            cover_formats = 'track/'+altAlbum+cover_formats # sets path of cover art made in a folder
+            cover_formats = "track/covers/"+altAlbum+cover_formats # sets path of cover art made in a folder
+            try:
+                renpy.image_size(cover_formats)
+            except:
+                cover_formats = "mod_assets/music_player/nocover.png"
         if album is not None: # checks if the file has a album name
             if comment is not None: # checks if the file has comments (replaces description)
                 description = album + '\n' + comment # adds album and comments to the description
@@ -444,9 +427,13 @@ init python:
             artist = "Unknown Artist"
         if cover_formats is None: # checks if it has a cover
             description = "Non-Metadata MP3"
-            cover_formats = False # tells the class there is no cover art
+            cover_formats = "mod_assets/music_player/nocover.png" # tells the class there is no cover art
         else:
-            cover_formats = 'track/'+altAlbum+cover_formats # sets path of cover art made in a folder
+            cover_formats = "track/covers/"+altAlbum+cover_formats # sets path of cover art made in a folder
+            try:
+                renpy.image_size(cover_formats)
+            except:
+                cover_formats = "mod_assets/music_player/nocover.png"
         if album is not None: # checks if the file has a album name
             if comment is not None: # checks if the file has comments (replaces description)
                 description = album + '\n' + comment # adds album and comments to the description
@@ -468,20 +455,41 @@ init python:
             cover_art = cover_formats
         )
     
+    def resort():
+        soundtracks = []
+        for obj in gc.get_objects():
+            if isinstance(obj, soundtrack):
+                global soundtracks
+                soundtracks.append(obj)
+        if organizeAZ:
+            soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.name)
+        if organizePriority:
+            soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.priority)
+
     gamedir = config.gamedir.replace('\\', '/')
 
     renpyFileList = renpy.list_files(common=False)
     trackFileName = []
     trackFilePath = []
+    #invalidCharacters = r" -"
+    invalidCharacters =r" - |'| "
     for contents in renpyFileList:
         if contents.startswith("track/"):
-            temp = re.sub(r"( - | )", " ", contents)
-            trackFileName.append(temp)
-            trackFilePath.append(contents)
+            if contents.endswith(".mp3") or contents.endswith(".ogg"):
+                try: renpy.file(gamedir + "/" + contents)
+                except: 
+                    if re.search(invalidCharacters, contents):
+                        temp = re.sub(invalidCharacters, "_", contents)
+                    else:
+                        temp = contents
+                    trackFileName.append(temp)
+                    trackFilePath.append(contents)
     
     for tracks in range(len(trackFileName)):
-        try: renpy.file(gamedir + '/' + trackFileName[tracks])
-        except: open(gamedir + '/' + trackFileName[tracks], "wb").write(renpy.file(trackFilePath[tracks]).read())
+        #try: renpy.file(gamedir + "/track/01 We Will RockYou.mp3")
+        try: renpy.file(gamedir + "/" + trackFileName[tracks])
+        #except: open(gamedir + "/track/01 We Will RockYou.mp3", "wb").write(renpy.file("track/01 We Will Rock You.mp3").read())
+        except: open(gamedir + "/" + trackFileName[tracks], "wb").write(renpy.file(trackFilePath[tracks]).read())
 
     # checks if a mp3 available in pointed directory
     if glob.glob(gamedir + '/track/*.mp3'):
@@ -526,13 +534,4 @@ init python:
     )
 
     # adds instances of soundtrack class to soundtracks list
-    soundtracks = []
-    import gc
-    for obj in gc.get_objects():
-        if isinstance(obj, soundtrack):
-            global soundtracks
-            soundtracks.append(obj)
-    if organizeAZ:
-        soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.name)
-    if organizePriority:
-        soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.priority)
+    resort()
