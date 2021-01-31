@@ -12,7 +12,7 @@ default music_was_muted_before_soundtrack_player_opened = False
 define organizeAZ = False
 define organizePriority = True
 define priorityScan = 2
-define ostVersion = "1.22"
+define ostVersion = "1.30"
 
 label music_player:
     call screen music_player()
@@ -46,9 +46,13 @@ label time_loop:
             readableDuration = convert_time(time_duration)
         title = len(current_soundtrack.full_name) # grabs the length of the name and artist 
         author = len(current_soundtrack.author)
-        if title <= 28: # checks length against set var checks (can be changed) 
-            title_size = 40 # sets font size
+        40
+        if title <= 21: # checks length against set var checks (can be changed) 
+            title_size = 40 # sets font size 32
             title_offset = 12 # sets offset of text to be almost flush with title
+        elif title <= 28:
+            title_size = 32
+            title_offset = 10
         else:
             title_size = 26
             title_offset = 8
@@ -124,9 +128,9 @@ screen music_player:
             imagebutton:
                 idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
                 action [ToggleVariable("organizePriority", False, True), Function(resort)]
-            # imagebutton:
-            #     idle "mod_assets/music_player/refreshList.png"
-            #     action [Function(refresh)]
+            imagebutton:
+                idle "mod_assets/music_player/refreshList.png"
+                action [Function(refresh_list)]
 
         #if renpy.music.is_playing(channel = 'music_player'):
             #bar value AudioPositionValue(channel=u'music_player', update_interval=0.01) style "music_player_time_bar"
@@ -209,7 +213,7 @@ style play_pause_button_hbox:
     spacing 25
 
 style music_options_hbox:
-    pos (335, 560)
+    pos (335, 570)
     spacing 25
 
 style l_default: # default responsible for other l_ info
@@ -276,7 +280,7 @@ init python:
     from tinytag import TinyTag # imports Tinytag
     import os, glob, time, re, gc # imports other needed packages
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
-
+    
     # Converts the time to a readable time
     def convert_time(x):
         readableTime = time.gmtime(float(x))
@@ -296,12 +300,10 @@ init python:
         else:
             pass
         renpy.music.stop(channel='music_player',fadeout=2.0)
-#            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
 
     #function that shows the screen
     def open_music_player():
         global current_soundtrack
-        #renpy.show_screen("music_player")
         current_soundtrack = False      
     
     def current_music_forward(time_offset = 0.0):
@@ -359,9 +361,6 @@ init python:
                 self.cover_art = "mod_assets/music_player/nocover.png"
             else:
                 self.cover_art = cover_art  
-
-        def __del__(self):
-            print "Object cleaned"
         
     # grabs info from the mp3/ogg (and cover if available)
     def get_info(path, tags):
@@ -398,7 +397,7 @@ init python:
             try:
                 renpy.image_size(cover_formats)
             except:
-                cover_formats = "mod_assets/music_player/nocover.png"
+                cover_formats = "mod_assets/music_player/nocover.png" # set to generic cover
         if album is not None: # checks if the file has a album name
             if comment is not None: # checks if the file has comments (replaces description)
                 description = album + '\n' + comment # adds album and comments to the description
@@ -420,7 +419,7 @@ init python:
             cover_art = cover_formats
         )
 
-    def def_mp3(title, artist, priority, res, sec, altAlbum, cover_formats, y, album, comment):
+    def def_mp3(title, artist, path, priority, res, sec, altAlbum, cover_formats, y, album, comment):
         if title is None: # checks if the file has a title
             title = "Unknown MP3 File " + str(y)
         if artist is None: #checks if the file has an artist 
@@ -433,7 +432,7 @@ init python:
             try:
                 renpy.image_size(cover_formats)
             except:
-                cover_formats = "mod_assets/music_player/nocover.png"
+                cover_formats = "mod_assets/music_player/nocover.png" # set to generic cover
         if album is not None: # checks if the file has a album name
             if comment is not None: # checks if the file has comments (replaces description)
                 description = album + '\n' + comment # adds album and comments to the description
@@ -443,7 +442,7 @@ init python:
             description = None # says there is no description
 
         # makes the mp3 a class to be displayed/played
-        mp3List[y] = soundtrack(
+        playableList[y] = soundtrack(
             name = title,
             full_name = title,
             author = artist,
@@ -454,24 +453,123 @@ init python:
             description = description,
             cover_art = cover_formats
         )
+
+    def scan_mp3():
+        global mp3List, playableList
+        if glob.glob(gamedir + '/track/*.mp3'): # checks if a mp3 available in pointed directory
+            if len(mp3List) != 0: # checks if not a empty array
+                mp3ListA = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3")] # lists songs as of current to mp3ListA
+                if len(mp3ListA) > len(mp3List): # checks if we are adding a song to the list
+                    for x in reversed(range(len(mp3ListA))): # checks if song is present already
+                        for y in range(len(mp3List)):
+                            if mp3ListA[x] == mp3List[y]:
+                                mp3ListA.pop(x) # removes present song from temp array
+                                x -= 1 # decrement x if so
+                    mp3ListLengthA = len(mp3ListA) # grabs total found of the temp list mp3
+                    for y in range(mp3ListLengthA):
+                        path = mp3ListA[y].replace("\\", "/") # changes path to be unix path
+                        mp3List.append(mp3ListA[y]) # adds temp array object to main
+                        tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
+                        title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                        def_mp3(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+                elif len(mp3ListA) < len(mp3List):
+                    for x in reversed(range(len(playableList))): # removes every song from the playableList section for rescan
+                        playableList.pop(x)
+                    mp3List = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3")] # grabs all mp3s again
+                    playableList = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3")]
+                    mp3ListLengthA = len(playableList) # grabs total found of the list mp3
+                    for y in range(mp3ListLengthA):
+                        path = playableList[y].replace("\\", "/") # changes path to be python path
+                        tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
+                        title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                        def_mp3(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+                else:
+                    pass
+            else:
+                mp3List = glob.glob(gamedir + '/track/*.mp3') # lists out all song paths in a array
+                playableList = glob.glob(gamedir + '/track/*.mp3')
+                mp3ListLength = len(playableList) # grabs total found of the list mp3
+                for y in range(mp3ListLength):
+                    path = playableList[y].replace("\\", "/") # changes path to be python path
+                    tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
+                    title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_mp3(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+
+    def scan_ogg():
+        global oggList, playableList
+        if glob.glob(gamedir + '/track/*.ogg'): # checks if a ogg available in pointed directory
+            if len(oggList) != 0: # checks if not a empty array
+                oggList = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".ogg")] # lists songs as of current to oggListA
+                if len(oggListA) > len(oggList): # checks if we are adding a song to the list
+                    for x in reversed(range(len(oggListA))): # checks if song is present already
+                        for y in range(len(oggList)):
+                            if oggListA[x] == oggList[y]:
+                                oggListA.pop(x) # removes present song from temp array
+                                x -= 1 # decrement x if so
+                    oggListLengthA = len(oggListA) # grabs total found of the temp list ogg
+                    for y in range(oggListLengthA):
+                        path = oggListA[y].replace("\\", "/") # changes path to be unix path
+                        oggList.append(oggListA[y]) # adds temp array object to main
+                        tags = TinyTag.get(path, image=True) # opens the ogg and reads the metadata | image=True allows TinyTag to read cover images from files
+                        title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                        def_mp3(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
+                elif len(oggListA) < len(oggList):
+                    for x in reversed(range(len(playableList))): # removes every song from the playableList section for rescan
+                        playableList.pop(x)
+                    oggList = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".ogg")] # grabs all oggs again
+                    playableList = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".ogg")]
+                    oggListLengthA = len(playableList) # grabs total found of the list ogg
+                    for y in range(oggListLengthA):
+                        path = playableList[y].replace("\\", "/") # changes path to be python path
+                        tags = TinyTag.get(path, image=True) # opens the oggs and reads the metadata | image=True allows TinyTag to read cover images from files
+                        title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                        def_ogg(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
+                    else:
+                        pass
+            else:
+                oggList = glob.glob(gamedir + '/track/*.ogg') # lists out all song paths in a array
+                playableList = glob.glob(gamedir + '/track/*.ogg')
+                oggListLength = len(playableList) # grabs total found of the list oggs
+                for y in range(oggListLength):
+                    path = playableList[y].replace("\\", "/") # changes path to be python path
+                    tags = TinyTag.get(path, image=True) # opens the ogg and reads the metadata | image=True allows TinyTag to read cover images from files
+                    title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_ogg(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
     
     def resort():
         soundtracks = []
-        for obj in gc.get_objects():
-            if isinstance(obj, soundtrack):
-                global soundtracks
-                soundtracks.append(obj)
+        global soundtracks
+        #for obj in gc.get_objects():
+        for obj in playableList: # fuck garbage collection, we yanking it from these vars
+            #if isinstance(obj, soundtrack):
+            soundtracks.append(obj)
+        for obj in manualDefineList:
+            soundtracks.append(obj)
         if organizeAZ:
             soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.name)
         if organizePriority:
             soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.priority)
 
-    gamedir = config.gamedir.replace('\\', '/')
+    def refresh_list():
+        scan_mp3() # scans mp3
+        scan_ogg() # scans ogg
+        resort()
 
+    gamedir = config.gamedir.replace('\\', '/')
+    try:
+        os.mkdir(gamedir + "/track")
+        os.mkdir(gamedir + "/track/covers")
+    except:
+        pass
     renpyFileList = renpy.list_files(common=False)
     trackFileName = []
     trackFilePath = []
-    #invalidCharacters = r" -"
+    mp3List = []
+    oggList = []
+    playableList = []
+    manualDefineList = []
+    global manualDefineList
+
     invalidCharacters =r" - |'| "
     for contents in renpyFileList:
         if contents.startswith("track/"):
@@ -485,34 +583,18 @@ init python:
                     trackFileName.append(temp)
                     trackFilePath.append(contents)
     
+    # writes songs in a track folder inside a RPA to the track folder outside the rpa
     for tracks in range(len(trackFileName)):
-        #try: renpy.file(gamedir + "/track/01 We Will RockYou.mp3")
         try: renpy.file(gamedir + "/" + trackFileName[tracks])
-        #except: open(gamedir + "/track/01 We Will RockYou.mp3", "wb").write(renpy.file("track/01 We Will Rock You.mp3").read())
         except: open(gamedir + "/" + trackFileName[tracks], "wb").write(renpy.file(trackFilePath[tracks]).read())
 
-    # checks if a mp3 available in pointed directory
-    if glob.glob(gamedir + '/track/*.mp3'):
-        mp3List = glob.glob(gamedir + '/track/*.mp3') # lists out all songs in mp3
-        mp3ListLength = len(mp3List) # grabs total found of the list mp3
-        for y in range(mp3ListLength):
-            path = mp3List[y].replace("\\", "/") # changes path to be python path
-            tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
-            title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-            def_mp3(title, artist, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+    scan_mp3()
 
-    # checks if a ogg available in pointed directory
-    if glob.glob(config.gamedir + '/track/*.ogg'):
-        oggList = glob.glob(config.gamedir + '/track/*.ogg') # lists out all songs in ogg
-        oggListLength = len(oggList) # grabs total found of the list ogg
-        for y in range(oggListLength):
-            path = oggList[y].replace("\\", "/") # changes path to be python path
-            tags = TinyTag.get(path, image=True) # opens the ogg and reads the metadata | image=True allows TinyTag to read cover images from files
-            title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-            def_ogg(title, artist, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
-
+    scan_ogg()
+    
     # template for soundtracks
     # this method still works. you can still set it manually like it if you mind.
+    # however now you must include manualDefineList.append(variable) to add it properly for refreshing
     your_reality = soundtrack(
         name = "Your reality",
         full_name = "Your reality",
@@ -522,6 +604,7 @@ init python:
         description = "I made mistakes, hurt you, hurt my friends. All I can do is hope you all forgive me.",
         cover_art = False
     )     
+    manualDefineList.append(your_reality)
     
     Wake_Up_Unchanged = soundtrack(
         name = "Unchanged",
@@ -532,6 +615,7 @@ init python:
         description = "Sad soundtrack",
         cover_art = "mod_assets/music_player/cover/cover.png"
     )
+    manualDefineList.append(Wake_Up_Unchanged)
 
     # adds instances of soundtrack class to soundtracks list
     resort()
