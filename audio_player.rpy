@@ -375,7 +375,7 @@ init python:
                 cover_formats=".jpg" # set image format to jpg
             else:
                 cover_formats=".png" # set image format to png
-            altAlbum = re.sub(r"\[|\]|/",'', tags.album) # converts problematic symbols to nothing i.e Emotion [Deluxe] to Emotion Deluxe
+            altAlbum = re.sub(r"\[|\]|/|:",'', tags.album) # converts problematic symbols to nothing i.e Emotion [Deluxe] to Emotion Deluxe
                 
             with open(gamedir + '/track/covers/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
                 f.write(image_data)
