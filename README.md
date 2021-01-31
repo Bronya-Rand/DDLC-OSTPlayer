@@ -24,16 +24,18 @@ This allows the user to play the soundtrack of mods outside the main story, side
 - Metadata support for songs.
 - Sideloading songs from your playlist to a directory if available in a mod.
 - Forward and Rewind back a song in progress.
+- Refresh Song List Support.
+- Sorting from within the player
 
 ## What do I need to run this?
 1. Copy of DDLC (New Blank Copy from [DDLC.moe](https://ddlc.moe)
 2. This ZIP [file](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases) with the `game` folder inside.
-> If you don't have it, but see `mod_assets`, `python-packages` and `audio_player.rpy` in it, you are still fine. 
 
-**Note:** If you already have Nikso's Audio Player installed in your mod and are upgrading to this one, copy the `audio_player.rpy` and `python-packages` to the game folder **and** delete the `audio_player.rpy` file from within within `mod_assets`.
+**Note:** If you already have Nikso's Audio Player installed in your mod and are upgrading to this one, copy the ZIP contents from the game folder to your mod's game folder **and** delete the `audio_player.rpy` file from within within `mod_assets`.
 
 3. **(Optional)** Custom Music in a folder called `track` in the `game` folder
-    * You can change this folder name or path to something else if you like. If you plan to do so, look at lines `336`, `353`, `384`, `407`, `408`, `417`, and `418` and change their respective paths to your new location.
+    * You can change this folder name or path to something else if you like. If you plan to do so, replace the phrase `track` to something else.
+    > Do let people knowing that you changed it if they want to sideload songs to it.
 
 ## How do I install this?
 * Drop all the contents in this ZIP file to the base folder where DDLC.exe/DDLC.sh is.
@@ -42,19 +44,22 @@ This allows the user to play the soundtrack of mods outside the main story, side
 ## How do I access the player?
 Copy this line to screens.rpy under lines `443-478` and restart DDLC.
 
-    ```
+```
     if main_menu:
         textbutton _("Soundtrack player") action [Show("music_player"), SetMute("music", True), SetMute("music_player_mixer", False), SetVariable("current_soundtrack", False), If(renpy.game.preferences.mute.get("music", False), true=SetVariable("music_was_muted_before_soundtrack_player_opened", True), false=SetVariable("music_was_muted_before_soundtrack_player_opened", False))]
-    ```
+```
 
 ## Can I still define songs the old way?
-Yes you can. The old format still works despite the revamp. It will just ignore some metadata changes and will be priortized as value `2`.
+Yes you can. The old format still works despite the revamp however you must add this line after defining it.
+```
+manualDefineList.append(Wake_Up_Unchanged) # change Wake_Up_Unchanged to your song variable
+```
 
 ## How do I priortize a song or make a song the first one?
 Set organizePriority to True and set the song priority by a value. 0 is the highest priority you can make a song be while 1, 2, etc. will be prioritzed lower in the list. i.e. `0 > 1 > 2 > ...`
 
 ## How do I organize the list alphabetically?
-Set organizeAZ to True
+Turn on the A-Z Priority in the music player when playing a song or default it on, by setting `organizeAZ` to True.
 
 ## Can the organizations work together?
 Yes.
@@ -78,4 +83,4 @@ Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music p
   * For MusicBrainz Picard: Add your song to Picard, select it, right-click the rectangle box that has 3 columns, select `Add New Tag`, select the tags you want to add like `Title`, `Artist`, `Comment`, `Album`, etc. There should be a blank box in the box area below, double-click it and edit away the info you want to add, then click `Save` and press the `Save` button near `Info`.
 
 ## Why did you do this?
-Cause I was bored and wanted to see RWBY songs play within DDLC and see song covers displayed. (Also to fix and improve Python code)
+Cause I was bored and wanted to see RWBY songs play within DDLC and see song covers displayed.
