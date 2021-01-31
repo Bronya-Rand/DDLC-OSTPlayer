@@ -560,6 +560,9 @@ init python:
     gamedir = config.gamedir.replace('\\', '/')
     try:
         os.mkdir(gamedir + "/track")
+    except:
+        pass
+    try:
         os.mkdir(gamedir + "/track/covers")
     except:
         pass
