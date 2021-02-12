@@ -14,6 +14,7 @@ define ostVersion = "1.31"
 init python:
     def music_pos(d, refresh):
         global time_position
+        global time_duration
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
             if renpy.music.get_pos(channel='music_player') is None: # gets position of song
                 time_position = time_position
@@ -22,7 +23,7 @@ init python:
         else:
             if time_position > time_duration - 2.0:
                 time_position = 0.0
-        time_pos = time_position # sets everything to default or saved values
+        time_pos = time_position
         readableTime = convert_time(time_pos) # converts to readable time for display
         d = Text(readableTime, style="music_player_description_text") 
         return d, 0.20
@@ -32,12 +33,9 @@ init python:
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
             if current_soundtrack.byteTime: # attempts to read time from the song file
                 time_duration = current_soundtrack.byteTime # sets duration to the song duration
-                time_dur = time_duration
             else:
                 time_duration = renpy.music.get_duration(channel='music_player') # sets duration to what renpy thinks it lasts
-                time_dur = time_duration
-        else:
-            time_dur = time_duration
+        time_dur = time_duration
         readableDuration = convert_time(time_dur) # converts to readable time for display
         d = Text(readableDuration, style="music_player_description_text")     
         return d, 0.20
@@ -145,11 +143,12 @@ screen music_player:
                 action [Function(refresh_list)]
 
         #if renpy.music.is_playing(channel = 'music_player'):
-            #bar value AudioPositionValue(channel=u'music_player', update_interval=0.20) style "music_player_time_bar"
+        #bar value AudioPositionValue(channel=u'music_player', update_interval=0.20) style "music_player_time_bar"
         #else:
             #bar value StaticValue(value = soundtrack_position, range = soundtrack_duration) style "music_player_time_bar"
         
-        bar value StaticValue(value = time_position, range = time_duration) style "music_player_time_bar" # new time bar responsible for progress"
+        #bar value StaticValue(value=time_position, range=time_duration) style "music_player_time_bar" # new time bar responsible for progress"
+        bar value AdjustableAudioPositionValue(channel='music_player', update_interval=0.1, soundtrack=current_soundtrack) style "music_player_time_bar"
 
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
@@ -195,14 +194,7 @@ screen music_player:
         # displays the time elapsed of the soundtrack
         add "readablePos" xpos 510 ypos 480
         add "readableDur" xpos 590 ypos 480
-        # text "[readableTime]" style "music_player_description_text" xpos 510 ypos 480
-        #text "([readableDuration])" style "music_player_description_text" xpos 590 ypos 480
-        
-        ## Debugging Code for time positions
-        # text "Current: [time_position]" style "music_player_description_text" xpos 590 ypos 620
-        # text "Total: [time_duration]" style "music_player_description_text" xpos 590 ypos 660
-        # text "File Time Registers: [readableDuration]" style "music_player_description_text" xpos 860 ypos 630
-
+    
     #button returns to main menu
     textbutton "Main Menu":
         text_style "navigation_button_text"
@@ -322,7 +314,7 @@ init python:
         global current_soundtrack
         current_soundtrack = False      
     
-    def current_music_forward(time_offset = 0.0):
+    def current_music_forward(time_offset = 0.0, barAdjust=False):
         global soundtrack_position
         global soundtrack_duration
         global time_position
@@ -354,6 +346,47 @@ init python:
             audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
             renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
 
+    @renpy.pure
+    class AdjustableAudioPositionValue(BarValue):
+        def __init__(self, channel='music', update_interval=0.1, soundtrack=None):
+            self.channel = channel
+            self.max_offset = 1.0
+            self.soundtrack = soundtrack
+            self.update_interval = update_interval
+            self.old_pos = 0.0
+            self.adjustment = None
+ 
+        def get_pos_duration(self):
+            pos = renpy.music.get_pos(self.channel) or 0.0
+            duration = self.soundtrack.byteTime
+ 
+            return pos, duration
+ 
+        def get_adjustment(self):
+            pos, duration = self.get_pos_duration()
+            self.adjustment = ui.adjustment(value=pos, range=duration, changed=self.set_pos, adjustable=True)
+            return self.adjustment
+ 
+        def set_pos(self, value):
+            if not isinstance(self.soundtrack, soundtrack):
+                return
+ 
+            if value >= self.adjustment.range - self.max_offset / 2:
+                return
+ 
+            if abs(value - self.old_pos) > self.max_offset:
+                renpy.play("<from {}>".format(value) + self.soundtrack.path, self.channel)
+ 
+        def periodic(self, st):
+ 
+            pos, duration = self.get_pos_duration()
+            if pos and pos <= duration:
+                self.adjustment.set_range(duration)
+                self.adjustment.change(pos)
+                self.old_pos = pos
+ 
+            return self.update_interval
+    
     class soundtrack:
         def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, time = False, byteTime = False, description = False, cover_art = False):
             #name that will be displayed
