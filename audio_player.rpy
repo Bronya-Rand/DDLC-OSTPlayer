@@ -141,14 +141,8 @@ screen music_player:
             imagebutton:
                 idle "mod_assets/music_player/refreshList.png"
                 action [Function(refresh_list)]
-
-        #if renpy.music.is_playing(channel = 'music_player'):
-        #bar value AudioPositionValue(channel=u'music_player', update_interval=0.20) style "music_player_time_bar"
-        #else:
-            #bar value StaticValue(value = soundtrack_position, range = soundtrack_duration) style "music_player_time_bar"
         
-        #bar value StaticValue(value=time_position, range=time_duration) style "music_player_time_bar" # new time bar responsible for progress"
-        bar value AdjustableAudioPositionValue(channel='music_player', update_interval=0.1, soundtrack=current_soundtrack) style "music_player_time_bar"
+        bar value StaticValue(value=time_position, range=time_duration) style "music_player_time_bar" # new time bar responsible for progress"
 
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
@@ -345,47 +339,6 @@ init python:
             pass
             audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
             renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
-
-    @renpy.pure
-    class AdjustableAudioPositionValue(BarValue):
-        def __init__(self, channel='music', update_interval=0.1, soundtrack=None):
-            self.channel = channel
-            self.max_offset = 1.0
-            self.soundtrack = soundtrack
-            self.update_interval = update_interval
-            self.old_pos = 0.0
-            self.adjustment = None
- 
-        def get_pos_duration(self):
-            pos = renpy.music.get_pos(self.channel) or 0.0
-            duration = self.soundtrack.byteTime
- 
-            return pos, duration
- 
-        def get_adjustment(self):
-            pos, duration = self.get_pos_duration()
-            self.adjustment = ui.adjustment(value=pos, range=duration, changed=self.set_pos, adjustable=True)
-            return self.adjustment
- 
-        def set_pos(self, value):
-            if not isinstance(self.soundtrack, soundtrack):
-                return
- 
-            if value >= self.adjustment.range - self.max_offset / 2:
-                return
- 
-            if abs(value - self.old_pos) > self.max_offset:
-                renpy.play("<from {}>".format(value) + self.soundtrack.path, self.channel)
- 
-        def periodic(self, st):
- 
-            pos, duration = self.get_pos_duration()
-            if pos and pos <= duration:
-                self.adjustment.set_range(duration)
-                self.adjustment.change(pos)
-                self.old_pos = pos
- 
-            return self.update_interval
     
     class soundtrack:
         def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, time = False, byteTime = False, description = False, cover_art = False):
