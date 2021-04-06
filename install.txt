@@ -1,0 +1,13 @@
+Installation:
+
+1. Copy the ZIP files to your DDLC game folder of your mod.
+2. Open screens.rpy in a text editor and add this line under lines 443-478
+
+if main_menu:
+    textbutton _("OST Player") action [Show("music_player"), SetMute("music", True), SetMute("music_player_mixer", False), SetVariable("current_soundtrack", False), If(renpy.game.preferences.mute.get("music", False), true=SetVariable("music_was_muted_before_soundtrack_player_opened", True), false=SetVariable("music_was_muted_before_soundtrack_player_opened", False)), Function(refresh_list)]
+
+
+3. Add music to the track folder or define them manually in audio_player.rpy
+4. Run DDLC and enjoy!
+
+Read README.md on Github or here for more information.
