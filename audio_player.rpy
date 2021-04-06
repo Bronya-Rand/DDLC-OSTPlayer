@@ -387,7 +387,7 @@ init python:
 
         def get_pos_duration(self):
             pos = renpy.music.get_pos(self.channel) or 0.0
-            duration = self.soundtrack.byteTime
+            duration = renpy.music.get_duration(self.channel) or self.soundtrack.byteTime
 
             return pos, duration
 
