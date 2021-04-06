@@ -21,16 +21,12 @@ init python:
             return Text("", style="music_player_description_text", size=40), 0.0
 
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
-            if renpy.music.get_pos(channel='music_player') is None: # gets position of song
-                time_position = time_position
-            else:
-                time_position = renpy.music.get_pos(channel='music_player') # grabs position of song
+            time_position = renpy.music.get_pos(channel='music_player') or time_position # grabs position of song
         else:
-            if time_position > time_duration - 0.01:
+            if time_position > time_duration - 0.20:
                 time_position = 0.0
 
-        time_pos = time_position
-        readableTime = convert_time(time_pos) # converts to readable time for display
+        readableTime = convert_time(time_position) # converts to readable time for display
         d = Text(readableTime, style="music_player_description_text") 
         return d, 0.20
 
@@ -41,13 +37,11 @@ init python:
             return Text("", style="music_player_description_text", size=40), 0.0
 
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
-            if current_soundtrack.byteTime: # attempts to read time from the song file
-                time_duration = current_soundtrack.byteTime # sets duration to the song duration
-            else:
-                time_duration = renpy.music.get_duration(channel='music_player') # sets duration to what renpy thinks it lasts
+            time_duration = renpy.music.get_duration(channel='music_player') or time_duration # sets duration to what renpy thinks it lasts
+        else:
+            time_duration = time_duration
 
-        time_dur = time_duration
-        readableDuration = convert_time(time_dur) # converts to readable time for display
+        readableDuration = convert_time(time_duration) # converts to readable time for display
         d = Text(readableDuration, style="music_player_description_text")     
         return d, 0.20
 
@@ -106,6 +100,9 @@ screen music_player:
 
     add "game_menu_bg"
     add "gui/overlay/main_menu.png"
+    
+    default bar_val = AdjustableAudioPositionValue()
+
     side "c l":
         
         viewport id "vpo":
@@ -164,7 +161,12 @@ screen music_player:
                 idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", "True", "mod_assets/music_player/replay.png")
                 action [ToggleVariable("loopSong", False, True), Function(current_music_play)]
         
-        bar value AdjustableAudioPositionValue(channel='music_player', update_interval=0.1, soundtrack=current_soundtrack) style "music_player_time_bar"
+        bar:
+            xsize 500
+            value bar_val
+            hovered bar_val.hovered
+            unhovered bar_val.unhovered
+            style "music_player_time_bar"
 
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
@@ -314,20 +316,24 @@ init python:
     def current_music_pause():
         global soundtrack_position
         global soundtrack_duration
+
         if renpy.music.get_pos(channel = 'music_player') is None:
             return
+
         soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 1.6
         soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
+
         if soundtrack_position is not None:
             audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path # Reminiscent of Traditional Players
-        else:
-            pass
+
         renpy.music.stop(channel='music_player',fadeout=2.0)
 
     def current_music_play():
         global time_position
+
         if renpy.music.get_pos(channel = 'music_player') is not None:
             return
+
         if time_position == 0.0:
             if loopSong == True:
                 audio.current_soundrack_pause = False
@@ -340,23 +346,23 @@ init python:
                 if loopSong == True:
                     renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=True)
                 else:
-                    renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
-
-    #function that shows the screen
-    def open_music_player():
-        global current_soundtrack
-        current_soundtrack = False      
+                    renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)   
     
     def current_music_forward():
         global soundtrack_position
         global soundtrack_duration
+
         if renpy.music.get_pos(channel = 'music_player') is None:
             return
+
         soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
         soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
+
         if soundtrack_position > soundtrack_duration:
             soundtrack_position = soundtrack_duration
+
         audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+
         if loopSong == True:
             renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=True)
         else:
@@ -364,30 +370,30 @@ init python:
 
     def current_music_backward():
         global soundtrack_position
-        global soundtrack_duration
+
         if renpy.music.get_pos(channel = 'music_player') is None:
             return
+
         soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
+
         if soundtrack_position < 0.0:
             soundtrack_position = 0.0
-        soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
+
         audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
         renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
 
     @renpy.pure
     class AdjustableAudioPositionValue(BarValue):
-        def __init__(self, channel='music', update_interval=0.1, soundtrack=None):
+        def __init__(self, channel='music_player', update_interval=0.0):
             self.channel = channel
-            self.max_offset = 1.0
-            self.soundtrack = soundtrack
             self.update_interval = update_interval
-            self.old_pos = 0.0
             self.adjustment = None
+            self._hovered = False
             self.loopThis = loopSong
 
         def get_pos_duration(self):
             pos = renpy.music.get_pos(self.channel) or 0.0
-            duration = renpy.music.get_duration(self.channel) or self.soundtrack.byteTime
+            duration = renpy.music.get_duration(self.channel) or time_duration
 
             return pos, duration
 
@@ -396,15 +402,17 @@ init python:
             self.adjustment = ui.adjustment(value=pos, range=duration, changed=self.set_pos, adjustable=True)
             return self.adjustment
 
+        def hovered(self):
+            self._hovered = True
+
+        def unhovered(self):
+            self._hovered = False
+
         def set_pos(self, value):
-            if not isinstance(self.soundtrack, soundtrack):
-                return
+            if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
+                renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
 
-            if value >= self.adjustment.range - self.max_offset / 2:
-                return
-
-            if abs(value - self.old_pos) > self.max_offset:
-                renpy.music.play("<from {}>".format(value) + self.soundtrack.path, self.channel)
+            return
 
         def periodic(self, st):
 
@@ -412,14 +420,14 @@ init python:
             if pos and pos <= duration:
                 self.adjustment.set_range(duration)
                 self.adjustment.change(pos)
-                self.old_pos = pos
-            if renpy.music.get_pos(self.channel) > renpy.music.get_duration(self.channel) - 0.10:
+            if renpy.music.get_pos(self.channel) > renpy.music.get_duration(self.channel) - 0.20:
                 if self.loopThis:
-                    renpy.music.play(self.soundtrack.path, self.channel, self.loopThis)
+                    renpy.music.play(current_soundtrack.path, self.channel, self.loopThis)
+
             return self.update_interval
     
     class soundtrack:
-        def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, time = False, byteTime = False, description = False, cover_art = False):
+        def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, time = False, description = False, cover_art = False):
             #name that will be displayed
             self.name = name
             #name that will be displayed in 
@@ -432,8 +440,6 @@ init python:
             self.author = author
             # time duration of the song
             self.time = time
-            # byte time duration of song
-            self.byteTime = byteTime
             #description of soundtrack
             self.description = description
             #path to the cover art image
@@ -443,9 +449,7 @@ init python:
                 self.cover_art = cover_art  
         
     # grabs info from the mp3/ogg (and cover if available)
-    def get_info(path, tags):
-        sec = tags.duration # takes the duration and converts to a 2 decimal float
-        res = convert_time(sec) # converts duration to readable time       
+    def get_info(path, tags):   
         try:
             image_data = tags.get_image()
             jpgregex = r"\\xFF\\xD8\\xFF"
@@ -459,12 +463,12 @@ init python:
                 
             with open(gamedir + '/track/covers/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
                 f.write(image_data)
-            return tags.title, tags.artist, res, sec, altAlbum, cover_formats, tags.album, tags.comment
+            return tags.title, tags.artist, altAlbum, cover_formats, tags.album, tags.comment
         except TypeError:
-            return tags.title, tags.artist, res, sec, None, None, tags.album, tags.comment
+            return tags.title, tags.artist, None, None, tags.album, tags.comment
     
     # makes a ogg class for all ogg files
-    def def_ogg(title, artist, priority, res, sec, altAlbum, cover_formats, y, album, comments):
+    def def_ogg(title, artist, priority, altAlbum, cover_formats, y, album, comments):
         if title is None: # checks if the file has a title
             title = "Unknown OGG File " + str(y)
         if artist is None: # checks if the file has an artist 
@@ -492,14 +496,12 @@ init python:
             full_name = title,
             author = artist,
             path = path,
-            time = res,
             priority = priorityScan,
-            byteTime = sec,
             description = description,
             cover_art = cover_formats
         )
 
-    def def_mp3(title, artist, path, priority, res, sec, altAlbum, cover_formats, y, album, comment):
+    def def_mp3(title, artist, path, priority, altAlbum, cover_formats, y, album, comment):
         if title is None: # checks if the file has a title
             title = "Unknown MP3 File " + str(y)
         if artist is None: #checks if the file has an artist 
@@ -527,9 +529,7 @@ init python:
             full_name = title,
             author = artist,
             path = path,
-            time = res,
             priority = priorityScan,
-            byteTime = sec,
             description = description,
             cover_art = cover_formats
         )
@@ -546,8 +546,8 @@ init python:
                 for y in range(mp3ListLengthA):
                     path = playableMP3List[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_mp3(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_mp3(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
             else:
                 mp3List = glob.glob(gamedir + '/track/*.mp3') # lists out all song paths in a array
                 playableMP3List = glob.glob(gamedir + '/track/*.mp3')
@@ -555,8 +555,8 @@ init python:
                 for y in range(mp3ListLength):
                     path = playableMP3List[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_mp3(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_mp3(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
 
     def scan_ogg():
         global oggList, playableOGGList
@@ -570,8 +570,8 @@ init python:
                 for y in range(oggListLengthA):
                     path = playableOGGList[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the oggs and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_ogg(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
+                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_ogg(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
             else:
                 oggList = glob.glob(gamedir + '/track/*.ogg') # lists out all song paths in a array
                 playableOGGList = glob.glob(gamedir + '/track/*.ogg')
@@ -579,8 +579,8 @@ init python:
                 for y in range(oggListLength):
                     path = playableOGGList[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the ogg and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, res, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_ogg(title, artist, path, priorityScan, res, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
+                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_ogg(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
     
     def resort():
         soundtracks = []
