@@ -215,11 +215,11 @@ screen music_player:
             add "readableDur" xpos 970 ypos 540
     
     #button returns to main menu
-    # textbutton "Main Menu":
-    #     text_style "navigation_button_text"
-    #     align (0.045,0.95)
-    #     #hides the screen, unmutes music channel and stops music on music_player channel
-    #     action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
+    textbutton "Main Menu":
+        text_style "navigation_button_text"
+        align (0.045,0.95)
+        #hides the screen, unmutes music channel and stops music on music_player channel
+        action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
 
     text "OST-Player v[ostVersion]":
         xalign 1.0 yalign 1.0
