@@ -10,7 +10,7 @@ define organizeAZ = False
 define organizePriority = True
 define loopSong = False
 define priorityScan = 2
-define ostVersion = "1.32"
+define ostVersion = "1.33"
 
 init python:
     def music_pos(d, refresh):
@@ -47,38 +47,39 @@ init python:
 
     def dynamic_title_text(d, refresh):
         if current_soundtrack == False: # failsafe to when user quits out of OST
-            return Text("Exiting...", style="music_player_music_text", size=40), 0.0
+            return Text("Exiting...", style="music_player_music_text", size=36), 0.0
 
         title = len(current_soundtrack.full_name) # grabs the length of the name and artist 
 
         if title <= 21: # checks length against set var checks (can be changed) 
-            songNameSize = 40 # sets font size 32
+            songNameSize = 37 # sets font size 32
         elif title <= 28:
-            songNameSize = 32
+            songNameSize = 29
         else:
-            songNameSize = 26
+            songNameSize = 23
 
         d = Text(current_soundtrack.full_name, style="music_player_music_text", size=songNameSize)
         return d, 0.20
 
     def dynamic_author_text(d, refresh):
         if current_soundtrack == False: # failsafe to when user quits out of OST
-            return Text("", style="music_player_song_author_text", size=40), 0.0
+            return Text("", style="music_player_song_author_text", size=23), 0.0
 
         author = len(current_soundtrack.author)
 
         if author <= 32:
             authorNameSize = 25
-            authorNameOffset = 12
         elif author <= 48:
             authorNameSize = 23
-            authorNameOffset = 12
         else:
             authorNameSize = 21
-            authorNameOffset = 8
 
-        d = Text(current_soundtrack.author, style="music_player_song_author_text", size=authorNameSize, yoffset=authorNameOffset)
+        d = Text(current_soundtrack.author, style="music_player_song_author_text", size=authorNameSize)
         return d, 0.20
+
+    def dynamic_description_text(d, refresh):
+        if current_soundtrack == False: # failsafe to when user quits out of OST
+            return Text("", style="music_player_song_author_text", size=23), 0.0
 
 image readablePos = DynamicDisplayable(music_pos)
 image readableDur = DynamicDisplayable(music_dur) 
@@ -130,7 +131,7 @@ screen music_player:
 
     if current_soundtrack:
         if current_soundtrack.cover_art:
-            add current_soundtrack.cover_art at cover_art_fade(500, 200)
+            add current_soundtrack.cover_art at cover_art_fade(500, 300)
 
         hbox:
             style "play_pause_button_hbox"
@@ -162,7 +163,7 @@ screen music_player:
                 action [ToggleVariable("loopSong", False, True), Function(current_music_play)]
         
         bar:
-            xsize 500
+            xsize 710
             value bar_val
             hovered bar_val.hovered
             unhovered bar_val.unhovered
@@ -171,24 +172,24 @@ screen music_player:
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
             vbox: # sets the vbox for the song name / artist name
-                xoffset 330 # old pos but as offsets
-                yoffset 390
+                xoffset 700 # old pos but as offsets
+                yoffset 220
                 hbox: # adds a hbox to the area set
-                    box_wrap True # wraps text when full
+                    #box_wrap True # wraps text when full
                     vbox:
                         style_prefix "player" # sets prefix of style to a custom style called player
                         add "titleName"
+                hbox:
                     vbox:
                         style_prefix "playerB" # another custom style to fit the vboxes 
                         if current_soundtrack:
-                            add "authorName" xpos 12 
+                            add "authorName" xpos 6
         else:
             # same but for alternative formating
             vbox:
-                xoffset 330
-                yoffset 390
+                xoffset 700 # old pos but as offsets
+                yoffset 220
                 hbox:
-                    box_wrap True
                     vbox:
                         style_prefix "player"
                         text "[current_soundtrack.full_name]" style "music_player_music_text" size title_size 
@@ -197,9 +198,11 @@ screen music_player:
         if current_soundtrack.description:
             viewport id "desc":
                 mousewheel True
-                xpos 640
-                ypos 520
-                child_size (700, None)
+                xpos 705
+                ypos 320
+                xsize 580
+                xfill True
+                #child_size (700, None)
                 style "music_player_description_viewport"
                 text "[current_soundtrack.description]" style "music_player_description_text"
             vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
@@ -208,15 +211,15 @@ screen music_player:
 
         # displays the time elapsed of the soundtrack
         if current_soundtrack:
-            add "readablePos" xpos 510 ypos 480
-            add "readableDur" xpos 590 ypos 480
+            add "readablePos" xpos 330 ypos 540
+            add "readableDur" xpos 970 ypos 540
     
     #button returns to main menu
-    textbutton "Main Menu":
-        text_style "navigation_button_text"
-        align (0.045,0.95)
-        #hides the screen, unmutes music channel and stops music on music_player channel
-        action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
+    # textbutton "Main Menu":
+    #     text_style "navigation_button_text"
+    #     align (0.045,0.95)
+    #     #hides the screen, unmutes music channel and stops music on music_player channel
+    #     action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
 
     text "OST-Player v[ostVersion]":
         xalign 1.0 yalign 1.0
@@ -233,11 +236,11 @@ transform cover_art_fade(x,y):
 
 #play and pause button position
 style play_pause_button_hbox:
-    pos (335, 520)
+    pos (710, 410)
     spacing 25
 
 style music_options_hbox:
-    pos (335, 570)
+    pos (710, 450)
     spacing 25
 
 style l_default: # default responsible for other l_ info
@@ -254,22 +257,27 @@ style l_list is l_default: # controls list formatting
     xfill True
 
 style player_vbox: # controls title formatting
-    xsize 500
+    xsize 580
+    xfill True
 
 style playerB_vbox: # controls artist formatting
-    xsize 430
+    xsize 580
+    xfill True
 
 #style for the name of the music that appears when it is playing
 style music_player_music_text:
     font "gui/font/RifficFree-Bold.ttf"
     color "#000"
     outlines [(0, "#000", 0, 0)]
-    size 40
+    size 36
+    ypos -5
 
 #style for author of the music
-style music_player_song_author_text is music_player_description_text
 style music_player_song_author_text:
-    yoffset 15
+    font "gui/font/Halogen.ttf"
+    size 22
+    outlines[]
+    color "#000"
 
 #style for viewport where description shows
 style music_player_description_viewport:
@@ -285,14 +293,14 @@ style music_player_description_text:
 
 #the slider that indicates how far music is
 style music_player_time_bar:
-    xsize 900
-    pos (320, 460)
+    xsize 400
+    pos (325, 520)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
 #slider that controls player music sound
 style music_player_volume_bar:
-    xsize 150
-    pos (323, 490)
+    xsize 120
+    pos (1125, 520)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
 #style for the scrollable music list 
