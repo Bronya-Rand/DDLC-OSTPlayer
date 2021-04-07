@@ -388,7 +388,11 @@ init python:
             soundtrack_position = 0.0
 
         audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-        renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
+        
+        if loopSong == True:
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=True)
+        else:
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
 
     @renpy.pure
     class AdjustableAudioPositionValue(BarValue):
@@ -418,7 +422,10 @@ init python:
 
         def set_pos(self, value):
             if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
-                renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
+                if self.loopThis:
+                    renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel, self.loopThis)
+                else:
+                    renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
 
             return
 
