@@ -371,7 +371,8 @@ init python:
         soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
 
         if soundtrack_position > soundtrack_duration:
-            soundtrack_position = soundtrack_duration
+            soundtrack_position = 0.0
+            return
 
         audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
 
