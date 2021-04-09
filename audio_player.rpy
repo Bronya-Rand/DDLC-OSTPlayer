@@ -8,6 +8,7 @@ default audio.current_soundrack_pause = False
 default music_was_muted_before_soundtrack_player_opened = False
 define organizeAZ = False
 define organizePriority = True
+define randomSong = False
 define loopSong = False
 define priorityScan = 2
 default old_volume = 0.0
@@ -82,10 +83,26 @@ init python:
         if current_soundtrack == False: # failsafe to when user quits out of OST
             return Text("", style="music_player_song_author_text", size=23), 0.0
 
+    def refresh_cover_data(d, refresh):
+        if current_soundtrack == False: # failsafe to when user quits out of OST
+            return Text("", style="music_player_song_author_text", size=23), 0.0
+
+        d = Image(current_soundtrack.cover_art)
+        return d, 0.20
+
+    def dynamic_description_text(d, refresh):
+        if current_soundtrack == False: # failsafe to when user quits out of OST
+            return Text("", style="music_player_song_author_text", size=23), 0.0
+
+        d = Text("[current_soundtrack.description]", style="music_player_description_text")
+        return d, 0.20
+
 image readablePos = DynamicDisplayable(music_pos)
 image readableDur = DynamicDisplayable(music_dur) 
 image titleName = DynamicDisplayable(dynamic_title_text) 
 image authorName = DynamicDisplayable(dynamic_author_text) 
+image coverArt = DynamicDisplayable(refresh_cover_data) 
+image songDescription = DynamicDisplayable(dynamic_description_text) 
 
 label music_player:
     call screen music_player()
@@ -124,15 +141,16 @@ screen music_player:
                     style "l_list" # style responsible for listing songs to the left hand side
                     text_style "navigation_button_text"
                     if current_soundtrack:
-                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong)]
+                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
-                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong)]
+                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
     if current_soundtrack:
         if current_soundtrack.cover_art:
-            add current_soundtrack.cover_art at cover_art_fade(500, 300)
+            add "coverArt" at cover_art_fade(505, 300)
+            #add current_soundtrack.cover_art at cover_art_fade(500, 300)
 
         hbox:
             style "play_pause_button_hbox"
@@ -159,11 +177,14 @@ screen music_player:
                 idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
                 action [ToggleVariable("organizePriority", False, True), Function(resort)]
             imagebutton:
-                idle "mod_assets/music_player/refreshList.png"
-                action [Function(refresh_list)]
-            imagebutton:
                 idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", "True", "mod_assets/music_player/replay.png")
                 action [ToggleVariable("loopSong", False, True), Function(current_music_play)]
+            imagebutton:
+                idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
+                action [ToggleVariable("randomSong", False, True)]
+            imagebutton:
+                idle "mod_assets/music_player/refreshList.png"
+                action [Function(refresh_list)]
         
         bar:
             xsize 710
@@ -175,7 +196,7 @@ screen music_player:
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
             vbox: # sets the vbox for the song name / artist name
-                xoffset 700 # old pos but as offsets
+                xoffset 703 # old pos but as offsets
                 yoffset 220
                 hbox: # adds a hbox to the area set
                     #box_wrap True # wraps text when full
@@ -190,7 +211,7 @@ screen music_player:
         else:
             # same but for alternative formating
             vbox:
-                xoffset 700 # old pos but as offsets
+                xoffset 705 # old pos but as offsets
                 yoffset 220
                 hbox:
                     vbox:
@@ -201,13 +222,13 @@ screen music_player:
         if current_soundtrack.description:
             viewport id "desc":
                 mousewheel True
-                xpos 705
+                xpos 710
                 ypos 320
                 xsize 580
                 xfill True
                 #child_size (700, None)
                 style "music_player_description_viewport"
-                text "[current_soundtrack.description]" style "music_player_description_text"
+                add "songDescription"
             vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
 
         bar value Preference ("music_player_mixer volume") style "music_player_volume_bar"
@@ -244,15 +265,15 @@ transform cover_art_fade(x,y):
 
 #play and pause button position
 style play_pause_button_hbox:
-    pos (710, 410)
+    pos (715, 410)
     spacing 25
 
 style music_options_hbox:
-    pos (710, 450)
+    pos (715, 450)
     spacing 25
 
 style volume_options_hbox:
-    pos (1070, 500)
+    pos (1075, 507)
 
 style l_default: # default responsible for other l_ info
     font gui.default_font
@@ -305,13 +326,13 @@ style music_player_description_text:
 #the slider that indicates how far music is
 style music_player_time_bar:
     xsize 400
-    pos (325, 520)
+    pos (330, 520)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
 #slider that controls player music sound
 style music_player_volume_bar:
     xsize 120
-    pos (1125, 520)
+    pos (1130, 520)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
 #style for the scrollable music list 
@@ -321,7 +342,7 @@ style music_player_viewport:
 
 init python:
     from tinytag import TinyTag # imports Tinytag
-    import os, glob, time, re, gc # imports other needed packages
+    import os, glob, time, re, gc, random # imports other needed packages
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
     
     # Converts the time to a readable time
@@ -353,49 +374,57 @@ init python:
         if renpy.music.get_pos(channel = 'music_player') is not None:
             return
 
-        if audio.current_soundrack_pause is None:
-            renpy.music.play(current_soundtrack.path, channel = 'music_player', loop=loopSong)
+        if audio.current_soundrack_pause is False:
+            renpy.music.play(current_soundtrack.path, channel = 'music_player', loop=loopSong, fadein=2.0)
         else:
-            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=loopSong)
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=loopSong, fadein=2.0)
             if loopSong:
-                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
+                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True, fadein=2.0)
     
     def current_music_forward():
         global soundtrack_position
         global soundtrack_duration
 
         if renpy.music.get_pos(channel = 'music_player') is None:
-            return
+            soundtrack_position = soundtrack_position + 5
+        else:
+            soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
 
-        soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
         soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
 
-        if soundtrack_position > soundtrack_duration:
+        if soundtrack_position >= soundtrack_duration: # temp fix if the track is above the song time
+            # set time to 0, pause track off, and replay the song
             soundtrack_position = 0.0
-            return
+            audio.current_soundrack_pause = False
+            if randomSong:
+                random_song()
+            else:
+                next_track()
+        else:
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
 
-        audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-
-        renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
-        if loopSong:
-            renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
+            if loopSong:
+                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
 
     def current_music_backward():
         global soundtrack_position
 
         if renpy.music.get_pos(channel = 'music_player') is None:
-            return
+            soundtrack_position = soundtrack_position - 5
+        else:
+            soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
 
-        soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
-
-        if soundtrack_position < 0.0:
+        if soundtrack_position <= 0.0:
             soundtrack_position = 0.0
-
-        audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-        
-        renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
-        if loopSong:
-            renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
+            audio.current_soundrack_pause = False
+            next_track(back=True)
+        else:
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
+            if loopSong:
+                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
 
     def mute_player():
         global old_volume
@@ -405,6 +434,38 @@ init python:
             preferences.set_volume("music_player_mixer", 0.0)
         else:
             preferences.set_volume("music_player_mixer", old_volume)
+
+    def next_track(back=False):
+        global current_soundtrack
+
+        for st in range(len(soundtracks)):
+            if current_soundtrack == soundtracks[st]:
+                try:
+                    if back:
+                        current_soundtrack = soundtracks[st-1]
+                    else:
+                        current_soundtrack = soundtracks[st+1]
+                except:
+                    if back:
+                        current_soundtrack = soundtracks[len(soundtracks)-1]
+                    else:
+                        current_soundtrack = soundtracks[0]
+                break
+
+        renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
+
+    def random_song():
+        global current_soundtrack
+
+        random.seed()
+        unique = 1
+        while unique != 0:
+            a = random.randrange(0,len(soundtracks)-1)
+            if current_soundtrack != soundtracks[a]:
+                unique = 0
+                current_soundtrack = soundtracks[a]
+
+        renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
 
     @renpy.pure
     class AdjustableAudioPositionValue(BarValue):
@@ -421,10 +482,11 @@ init python:
 
             return pos, duration
 
-        def get_loop_status(self):
+        def get_song_options_status(self):
             global loopSong
+            global randomSong
 
-            return loopSong
+            return loopSong, randomSong
 
         def get_adjustment(self):
             pos, duration = self.get_pos_duration()
@@ -438,7 +500,7 @@ init python:
             self._hovered = False
 
         def set_pos(self, value):
-            loopThis = self.get_loop_status()
+            loopThis = self.get_song_options_status()
             if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
                 renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
                 if loopThis:
@@ -449,13 +511,17 @@ init python:
         def periodic(self, st):
 
             pos, duration = self.get_pos_duration()
-            loopThis = self.get_loop_status()
+            loopThis, doRandom = self.get_song_options_status()
             if pos and pos <= duration:
                 self.adjustment.set_range(duration)
                 self.adjustment.change(pos)
             if pos > duration - 0.20:
                 if loopThis:
-                    renpy.music.play(current_soundtrack.path, self.channel, loop=True) # JIC
+                    renpy.music.play(current_soundtrack.path, self.channel, loop=True)
+                elif doRandom:
+                    random_song()
+                else:
+                    next_track()
 
             return self.update_interval
     
