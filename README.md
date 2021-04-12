@@ -33,7 +33,7 @@ This allows the user to play the soundtrack of mods outside the main story, side
 - Refresh Song List Support.
 - Sorting from within the player.
 - Replay support
-- Improved fonts for Russian (Song Title), Chinese and Korean (Author/Description). See Notes Below.
+- Improved fonts for [Russian](assets/screenshot0019.png) (Song Title), Chinese, [Japanese](assets/screenshot0020.png) and Korean (Author/Description). See Notes Below.
   > Riffic-Bold will have to be downloaded separately to comply with the FontSpring license.
  
   > Due to languages and font character limits, the fonts in DDLC-OSTPlayer will not cover all languages. 
