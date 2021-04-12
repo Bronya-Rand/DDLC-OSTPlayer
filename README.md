@@ -1,5 +1,5 @@
 # DDLC-OSTPlayer
-A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**1.32**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**1.33**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
 ![Sample preview](assets/screenshot0016.png)
 
