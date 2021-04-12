@@ -277,6 +277,7 @@ style volume_options_hbox:
 
 style l_default: # default responsible for other l_ info
     font gui.default_font
+    #font "mod_assets/music_player/riffic-bold.ttf"
     size 18
     color gui.text_color
     outlines [(2, "#000000aa", 0, 0)]
@@ -296,18 +297,34 @@ style playerB_vbox: # controls artist formatting
     xsize 580
     xfill True
 
+style music_navigation_button_text:
+    font "gui/font/RifficFree-Bold.ttf"
+    #font "mod_assets/music_player/riffic-bold.ttf"
+    color "#fff"
+    outlines [(4, "#b59", 0, 0), (2, "#b59", 2, 2)]
+    hover_outlines [(4, "#fac", 0, 0), (2, "#fac", 2, 2)]
+    insensitive_outlines [(4, "#fce", 0, 0), (2, "#fce", 2, 2)]
+
 #style for the name of the music that appears when it is playing
 style music_player_music_text:
     font "gui/font/RifficFree-Bold.ttf"
+    #font "mod_assets/music_player/riffic-bold.ttf"
     color "#000"
     outlines [(0, "#000", 0, 0)]
     size 36
-    ypos -5
 
 #style for author of the music
+style music_player_song_author_text is music_player_description_text
 style music_player_song_author_text:
-    font "gui/font/Halogen.ttf"
+    font "mod_assets/music_player/NotoSansSC-Light.otf"
     size 22
+    outlines[]
+    color "#000"
+
+# halogen for time progress
+style song_progress:
+    font "gui/font/Halogen.ttf"
+    size 25
     outlines[]
     color "#000"
 
@@ -318,7 +335,7 @@ style music_player_description_viewport:
 
 #style for description text
 style music_player_description_text:
-    font "gui/font/Halogen.ttf"
+    font "mod_assets/music_player/NotoSansSC-Light.otf"
     size 25
     outlines[]
     color "#000"
