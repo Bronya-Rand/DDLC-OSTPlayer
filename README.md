@@ -17,6 +17,7 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Ver
 * khaase (Pixabay) - Refresh Icon
 * eugenialcala (Pixabay) - Replay Icon
 * raphaelsilva (Pixabay) - Shuffle Icon
+* Josy_Dom_Alexis (Pixabay) - Volume Icon
 * Google - Noto Sans SC Font (Author/Description Tag)
 * Weiss Schnee - Support (Weiss :D)
 
