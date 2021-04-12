@@ -1,5 +1,5 @@
 # DDLC-OSTPlayer
-A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**1.32**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**1.33**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
 ![Sample preview](assets/screenshot0005.png)
 
@@ -24,16 +24,17 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Ver
 This allows the user to play the soundtrack of mods outside the main story, sideload actual music to play along with the mod OST or mod authors automatically adding their songs and having them display on the player.
 
 ## What does this version improve on?
-- Added MP3 compatibility to be read and played.
-- Improved music progress capability and music player aesthetic.
-- Dynamic title and font size changes (sort of) and Dynamic Cover Art Scaling (no need to descale art to 350x350, scale it even higher!).
-- Metadata support for songs.
-- Sideloading songs from your playlist to a directory if available in a mod.
+- Ability to play MP3's.
+- Improved music player aesthetic.
+- Dynamic title and font size changes (sort of) and cover art scaling (no need to descale art to 350x350).
+- Song metadata support.
+- Sideload songs from your playlist to be played with the mod's tracks.
 - Forward and Rewind back a song in progress.
 - Refresh Song List Support.
 - Sorting from within the player.
-- Replay support
-- Improved fonts for [Russian](assets/screenshot0019.png) (Song Title), Chinese, [Japanese](assets/screenshot0020.png) and Korean (Author/Description). See Notes Below.
+- Loop/Shuffle Support
+- Automatically jumps to the next song after current song has ended.
+- Improved fonts for [Russian](assets/screenshot0017.png) (Song Title), Chinese, [Japanese](assets/screenshot0021.png) and Korean. See Notes Below.
   > Riffic-Bold will have to be downloaded separately to comply with the FontSpring license.
  
   > Due to languages and font character limits, the fonts in DDLC-OSTPlayer will not cover all languages. 
@@ -53,7 +54,7 @@ This allows the user to play the soundtrack of mods outside the main story, side
 1. Drop all the contents in this ZIP file to the base folder where DDLC.exe/DDLC.sh is.
     > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun` and drop the ZIP file contents in there.
 
-2. **(Recommended but Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` to `game/mod_assets/music_player`
+2. **(Recommended but Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` in *Fonts* to `game/mod_assets/music_player`
     
     - Open `audio_player.rpy` and add a `#` to the front of lines `280`, `302` and `311`. Then remove the `#` in the front of lines `281`,`303` and `312`.
 
