@@ -8,9 +8,11 @@ default audio.current_soundrack_pause = False
 default music_was_muted_before_soundtrack_player_opened = False
 define organizeAZ = False
 define organizePriority = True
+define randomSong = False
 define loopSong = False
 define priorityScan = 2
-define ostVersion = "1.32"
+default old_volume = 0.0
+define ostVersion = "1.33"
 
 init python:
     def music_pos(d, refresh):
@@ -18,7 +20,7 @@ init python:
         global time_duration
 
         if current_soundtrack == False: # failsafe to when user quits out of OST
-            return Text("", style="music_player_description_text", size=40), 0.0
+            return Text("", style="song_progress", size=40), 0.0
 
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
             time_position = renpy.music.get_pos(channel='music_player') or time_position # grabs position of song
@@ -27,14 +29,14 @@ init python:
                 time_position = 0.0
 
         readableTime = convert_time(time_position) # converts to readable time for display
-        d = Text(readableTime, style="music_player_description_text") 
+        d = Text(readableTime, style="song_progress") 
         return d, 0.20
 
     def music_dur(d, refresh):
         global time_duration
 
         if current_soundtrack == False: # failsafe to when user quits out of OST
-            return Text("", style="music_player_description_text", size=40), 0.0
+            return Text("", style="song_progress", size=40), 0.0
 
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
             time_duration = renpy.music.get_duration(channel='music_player') or time_duration # sets duration to what renpy thinks it lasts
@@ -42,48 +44,65 @@ init python:
             time_duration = time_duration
 
         readableDuration = convert_time(time_duration) # converts to readable time for display
-        d = Text(readableDuration, style="music_player_description_text")     
+        d = Text(readableDuration, style="song_progress")     
         return d, 0.20
 
     def dynamic_title_text(d, refresh):
         if current_soundtrack == False: # failsafe to when user quits out of OST
-            return Text("Exiting...", style="music_player_music_text", size=40), 0.0
+            return Text("Exiting...", style="music_player_music_text", size=36), 0.0
 
         title = len(current_soundtrack.full_name) # grabs the length of the name and artist 
 
         if title <= 21: # checks length against set var checks (can be changed) 
-            songNameSize = 40 # sets font size 32
+            songNameSize = 37 # sets font size 32
         elif title <= 28:
-            songNameSize = 32
+            songNameSize = 29
         else:
-            songNameSize = 26
+            songNameSize = 23
 
         d = Text(current_soundtrack.full_name, style="music_player_music_text", size=songNameSize)
         return d, 0.20
 
     def dynamic_author_text(d, refresh):
         if current_soundtrack == False: # failsafe to when user quits out of OST
-            return Text("", style="music_player_song_author_text", size=40), 0.0
+            return Text("", style="music_player_song_author_text", size=23), 0.0
 
         author = len(current_soundtrack.author)
 
         if author <= 32:
             authorNameSize = 25
-            authorNameOffset = 12
         elif author <= 48:
             authorNameSize = 23
-            authorNameOffset = 12
         else:
             authorNameSize = 21
-            authorNameOffset = 8
 
-        d = Text(current_soundtrack.author, style="music_player_song_author_text", size=authorNameSize, yoffset=authorNameOffset)
+        d = Text(current_soundtrack.author, style="music_player_song_author_text", size=authorNameSize)
+        return d, 0.20
+
+    def dynamic_description_text(d, refresh):
+        if current_soundtrack == False: # failsafe to when user quits out of OST
+            return Text("", style="music_player_song_author_text", size=23), 0.0
+
+    def refresh_cover_data(d, refresh):
+        if current_soundtrack == False: # failsafe to when user quits out of OST
+            return Text("", style="music_player_song_author_text", size=23), 0.0
+
+        d = Image(current_soundtrack.cover_art)
+        return d, 0.20
+
+    def dynamic_description_text(d, refresh):
+        if current_soundtrack == False: # failsafe to when user quits out of OST
+            return Text("", style="music_player_song_author_text", size=23), 0.0
+
+        d = Text("[current_soundtrack.description]", style="music_player_description_text")
         return d, 0.20
 
 image readablePos = DynamicDisplayable(music_pos)
 image readableDur = DynamicDisplayable(music_dur) 
 image titleName = DynamicDisplayable(dynamic_title_text) 
 image authorName = DynamicDisplayable(dynamic_author_text) 
+image coverArt = DynamicDisplayable(refresh_cover_data) 
+image songDescription = DynamicDisplayable(dynamic_description_text) 
 
 label music_player:
     call screen music_player()
@@ -120,17 +139,17 @@ screen music_player:
             for st in soundtracks:
                 textbutton "[st.name]":
                     style "l_list" # style responsible for listing songs to the left hand side
-                    text_style "navigation_button_text"
+                    text_style "music_navigation_button_text"
                     if current_soundtrack:
-                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong)]
+                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
-                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong)]
+                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
     if current_soundtrack:
         if current_soundtrack.cover_art:
-            add current_soundtrack.cover_art at cover_art_fade(500, 200)
+            add "coverArt" at cover_art_fade(500, 200)
 
         hbox:
             style "play_pause_button_hbox"
@@ -155,12 +174,17 @@ screen music_player:
                 idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
                 action [ToggleVariable("organizePriority", False, True), Function(resort)]
             imagebutton:
-                idle "mod_assets/music_player/refreshList.png"
-                action [Function(refresh_list)]
-            imagebutton:
                 idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", "True", "mod_assets/music_player/replay.png")
                 action [ToggleVariable("loopSong", False, True), Function(current_music_play)]
-        
+            imagebutton:
+                idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
+                action [ToggleVariable("randomSong", False, True)]
+        hbox:
+            style "music_options_hboxB"
+            imagebutton:
+                idle "mod_assets/music_player/refreshList.png"
+                action [Function(refresh_list)]
+
         bar:
             xsize 500
             value bar_val
@@ -181,7 +205,7 @@ screen music_player:
                     vbox:
                         style_prefix "playerB" # another custom style to fit the vboxes 
                         if current_soundtrack:
-                            add "authorName" xpos 12 
+                            add "authorName" xpos 6
         else:
             # same but for alternative formating
             vbox:
@@ -201,15 +225,20 @@ screen music_player:
                 ypos 520
                 child_size (700, None)
                 style "music_player_description_viewport"
-                text "[current_soundtrack.description]" style "music_player_description_text"
+                add "songDescription"
             vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
 
         bar value Preference ("music_player_mixer volume") style "music_player_volume_bar"
 
+        imagebutton:
+            style "volume_options_hbox"
+            idle ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", "mod_assets/music_player/volume.png", "True", "mod_assets/music_player/volumeOn.png")
+            action [Function(mute_player)]
+
         # displays the time elapsed of the soundtrack
         if current_soundtrack:
-            add "readablePos" xpos 510 ypos 480
-            add "readableDur" xpos 590 ypos 480
+            add "readablePos" xpos 540 ypos 480
+            add "readableDur" xpos 620 ypos 480
     
     #button returns to main menu
     textbutton "Main Menu":
@@ -240,8 +269,16 @@ style music_options_hbox:
     pos (335, 570)
     spacing 25
 
+style music_options_hboxB:
+    pos (335, 610)
+    spacing 25
+
+style volume_options_hbox:
+    pos (323, 481)
+
 style l_default: # default responsible for other l_ info
     font gui.default_font
+    #font "mod_assets/music_player/riffic-bold.ttf"
     size 18
     color gui.text_color
     outlines [(2, "#000000aa", 0, 0)]
@@ -254,22 +291,43 @@ style l_list is l_default: # controls list formatting
     xfill True
 
 style player_vbox: # controls title formatting
-    xsize 500
+    xsize 510 # controls length of title box
+    xfill True # fills text in the box
 
 style playerB_vbox: # controls artist formatting
-    xsize 430
+    xsize 430  # controls length of author box
+    xfill True # fills text in the box
+
+style music_navigation_button_text:
+    font "gui/font/RifficFree-Bold.ttf"
+    #font "mod_assets/music_player/riffic-bold.ttf"
+    color "#fff"
+    outlines [(4, "#b59", 0, 0), (2, "#b59", 2, 2)]
+    hover_outlines [(4, "#fac", 0, 0), (2, "#fac", 2, 2)]
+    insensitive_outlines [(4, "#fce", 0, 0), (2, "#fce", 2, 2)]
 
 #style for the name of the music that appears when it is playing
 style music_player_music_text:
     font "gui/font/RifficFree-Bold.ttf"
+    #font "mod_assets/music_player/riffic-bold.ttf"
     color "#000"
     outlines [(0, "#000", 0, 0)]
-    size 40
+    size 36
 
 #style for author of the music
 style music_player_song_author_text is music_player_description_text
 style music_player_song_author_text:
-    yoffset 15
+    font "mod_assets/music_player/NotoSansSC-Light.otf"
+    size 22
+    outlines[]
+    color "#000"
+
+# halogen for time progress
+style song_progress:
+    font "gui/font/Halogen.ttf"
+    size 25
+    outlines[]
+    color "#000"
 
 #style for viewport where description shows
 style music_player_description_viewport:
@@ -278,7 +336,7 @@ style music_player_description_viewport:
 
 #style for description text
 style music_player_description_text:
-    font "gui/font/Halogen.ttf"
+    font "mod_assets/music_player/NotoSansSC-Light.otf"
     size 25
     outlines[]
     color "#000"
@@ -292,7 +350,7 @@ style music_player_time_bar:
 #slider that controls player music sound
 style music_player_volume_bar:
     xsize 150
-    pos (323, 490)
+    pos (373, 490)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
 #style for the scrollable music list 
@@ -302,7 +360,7 @@ style music_player_viewport:
 
 init python:
     from tinytag import TinyTag # imports Tinytag
-    import os, glob, time, re, gc # imports other needed packages
+    import os, glob, time, re, gc, random # imports other needed packages
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
     
     # Converts the time to a readable time
@@ -334,53 +392,98 @@ init python:
         if renpy.music.get_pos(channel = 'music_player') is not None:
             return
 
-        if time_position == 0.0:
-            if loopSong == True:
-                audio.current_soundrack_pause = False
-                renpy.music.play(current_soundtrack.path, channel = 'music_player', loop=True)
-            else:
-                audio.current_soundrack_pause = False
-                renpy.music.play(current_soundtrack.path, channel = 'music_player', loop=False)
+        if audio.current_soundrack_pause is False:
+            renpy.music.play(current_soundtrack.path, channel = 'music_player', loop=loopSong, fadein=2.0)
         else:
-            if audio.current_soundrack_pause is not False:
-                if loopSong == True:
-                    renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=True)
-                else:
-                    renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)   
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=loopSong, fadein=2.0)
+            if loopSong:
+                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True, fadein=2.0)
     
     def current_music_forward():
         global soundtrack_position
         global soundtrack_duration
 
         if renpy.music.get_pos(channel = 'music_player') is None:
-            return
+            soundtrack_position = soundtrack_position + 5
+        else:
+            soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
 
-        soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
         soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
 
-        if soundtrack_position > soundtrack_duration:
-            soundtrack_position = soundtrack_duration
-
-        audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-
-        if loopSong == True:
-            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=True)
+        if soundtrack_position >= soundtrack_duration: # temp fix if the track is above the song time
+            # set time to 0, pause track off, and replay the song
+            soundtrack_position = 0.0
+            audio.current_soundrack_pause = False
+            if randomSong:
+                random_song()
+            else:
+                next_track()
         else:
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+
             renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
+            if loopSong:
+                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
 
     def current_music_backward():
         global soundtrack_position
 
         if renpy.music.get_pos(channel = 'music_player') is None:
-            return
+            soundtrack_position = soundtrack_position - 5
+        else:
+            soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
 
-        soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
-
-        if soundtrack_position < 0.0:
+        if soundtrack_position <= 0.0:
             soundtrack_position = 0.0
+            audio.current_soundrack_pause = False
+            next_track(back=True)
+        else:
+            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            
+            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
+            if loopSong:
+                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
 
-        audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-        renpy.music.play(audio.current_soundrack_pause, channel = 'music_player')
+    def mute_player():
+        global old_volume
+
+        if preferences.get_volume("music_player_mixer") != 0.0:
+            old_volume = preferences.get_volume("music_player_mixer")
+            preferences.set_volume("music_player_mixer", 0.0)
+        else:
+            preferences.set_volume("music_player_mixer", old_volume)
+
+    def next_track(back=False):
+        global current_soundtrack
+
+        for st in range(len(soundtracks)):
+            if current_soundtrack == soundtracks[st]:
+                try:
+                    if back:
+                        current_soundtrack = soundtracks[st-1]
+                    else:
+                        current_soundtrack = soundtracks[st+1]
+                except:
+                    if back:
+                        current_soundtrack = soundtracks[len(soundtracks)-1]
+                    else:
+                        current_soundtrack = soundtracks[0]
+                break
+
+        renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
+
+    def random_song():
+        global current_soundtrack
+
+        random.seed()
+        unique = 1
+        while unique != 0:
+            a = random.randrange(0,len(soundtracks)-1)
+            if current_soundtrack != soundtracks[a]:
+                unique = 0
+                current_soundtrack = soundtracks[a]
+
+        renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
 
     @renpy.pure
     class AdjustableAudioPositionValue(BarValue):
@@ -389,13 +492,19 @@ init python:
             self.update_interval = update_interval
             self.adjustment = None
             self._hovered = False
-            self.loopThis = loopSong
 
         def get_pos_duration(self):
+            
             pos = renpy.music.get_pos(self.channel) or 0.0
             duration = renpy.music.get_duration(self.channel) or time_duration
 
             return pos, duration
+
+        def get_song_options_status(self):
+            global loopSong
+            global randomSong
+
+            return loopSong, randomSong
 
         def get_adjustment(self):
             pos, duration = self.get_pos_duration()
@@ -409,20 +518,28 @@ init python:
             self._hovered = False
 
         def set_pos(self, value):
+            loopThis = self.get_song_options_status()
             if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
                 renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
+                if loopThis:
+                    renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
 
             return
 
         def periodic(self, st):
 
             pos, duration = self.get_pos_duration()
+            loopThis, doRandom = self.get_song_options_status()
             if pos and pos <= duration:
                 self.adjustment.set_range(duration)
                 self.adjustment.change(pos)
-            if renpy.music.get_pos(self.channel) > renpy.music.get_duration(self.channel) - 0.20:
-                if self.loopThis:
-                    renpy.music.play(current_soundtrack.path, self.channel, self.loopThis)
+            if pos > duration - 0.20:
+                if loopThis:
+                    renpy.music.play(current_soundtrack.path, self.channel, loop=True)
+                elif doRandom:
+                    random_song()
+                else:
+                    next_track()
 
             return self.update_interval
     
