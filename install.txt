@@ -6,6 +6,9 @@ Installation:
 if main_menu:
     textbutton _("OST Player") action [Show("music_player"), SetMute("music", True), SetMute("music_player_mixer", False), SetVariable("current_soundtrack", False), If(renpy.game.preferences.mute.get("music", False), true=SetVariable("music_was_muted_before_soundtrack_player_opened", True), false=SetVariable("music_was_muted_before_soundtrack_player_opened", False)), Function(refresh_list)]
 
+(Recommended but Optional) 3. Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
+    a. Copy the riffic-bold.ttf in the Fonts folder and paste it into the game/mod_assets/music_player folder
+    b. Open audio_player.rpy and add a # to the front of lines 279, 301 and 310. Then remove the # in the front of lines 280, 302 and 311.
 
 3. Add music to the track folder or define them manually in audio_player.rpy
 4. Run DDLC and enjoy!

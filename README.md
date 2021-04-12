@@ -54,9 +54,9 @@ This allows anyone to play the mod soundtrack outside of the mod itself and side
 1. Drop all the contents in this ZIP file to the base folder where DDLC.exe/DDLC.sh is.
     > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun` and drop the ZIP file contents in there.
 
-2. **(Recommended but Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` to `game/mod_assets/music_player`
+2. **(Recommended but Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` in *Fonts* to `game/mod_assets/music_player`
     
-    - Open `audio_player.rpy` and add a `#` to the front of lines `279`, `301` and `310`. Then remove the `#` in the front of lines `280`,`302` and `311`.
+    - Open `audio_player.rpy` and add a `#` to the front of lines `279`, `301` and `310`. Then remove the `#` in the front of lines `280`, `302` and `311`.
 
 ## How do I access the player?
 Copy this line to `screens.rpy` under lines `443-478` and restart DDLC.
