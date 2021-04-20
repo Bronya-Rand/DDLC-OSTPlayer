@@ -12,6 +12,7 @@ define randomSong = False
 define loopSong = False
 define priorityScan = 2
 default old_volume = 0.0
+define old_ui = False
 define ostVersion = "1.34"
 
 init python:
@@ -149,10 +150,16 @@ screen music_player:
 
     if current_soundtrack:
         if current_soundtrack.cover_art:
-            add "coverArt" at cover_art_fade(500, 200)
+            if old_ui:
+                add "coverArt" at cover_art_fade(500, 200)
+            else:
+                add "coverArt" at cover_art_fade(505, 300)
 
         hbox:
-            style "play_pause_button_hbox"
+            if old_ui:
+                style "play_pause_buttonO_hbox"
+            else:
+                style "play_pause_buttonN_hbox"
             imagebutton:
                 idle "mod_assets/music_player/backward.png"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
@@ -166,7 +173,10 @@ screen music_player:
                 idle "mod_assets/music_player/forward.png"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
         hbox:
-            style "music_options_hbox"
+            if old_ui:
+                style "music_optionsO_hbox"
+            else:
+                style "music_optionsN_hbox"
             imagebutton:
                 idle ConditionSwitch("organizeAZ", "mod_assets/music_player/A-ZOn.png", "True", "mod_assets/music_player/A-Z.png")
                 action [ToggleVariable("organizeAZ", False, True), Function(resort)]
@@ -179,38 +189,75 @@ screen music_player:
             imagebutton:
                 idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
                 action [ToggleVariable("randomSong", False, True)]
-        hbox:
-            style "music_options_hboxB"
-            imagebutton:
-                idle "mod_assets/music_player/refreshList.png"
-                action [Function(refresh_list)]
+            if not old_ui:
+                imagebutton:
+                    idle "mod_assets/music_player/refreshList.png"
+                    action [Function(refresh_list)]
+                imagebutton:
+                    idle ConditionSwitch("old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
+                    action [ToggleVariable("old_ui", False, True)]
+        if old_ui:
+            hbox:
+                style "music_options_hboxB"
+                imagebutton:
+                    idle "mod_assets/music_player/refreshList.png"
+                    action [Function(refresh_list)]
+                imagebutton:
+                    idle ConditionSwitch("old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
+                    action [ToggleVariable("old_ui", False, True)]
 
         bar:
-            xsize 500
+            if old_ui:
+                xsize 500
+            else:
+                xsize 710
             value bar_val
             hovered bar_val.hovered
             unhovered bar_val.unhovered
-            style "music_player_time_bar"
+            if old_ui:
+                style "music_player_timeO_bar"
+            else:
+                style "music_player_timeN_bar"
 
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
             vbox: # sets the vbox for the song name / artist name
-                xoffset 330 # old pos but as offsets
-                yoffset 390
-                hbox: # adds a hbox to the area set
-                    box_wrap True # wraps text when full
-                    vbox:
-                        style_prefix "player" # sets prefix of style to a custom style called player
-                        add "titleName"
-                    vbox:
-                        style_prefix "playerB" # another custom style to fit the vboxes 
-                        if current_soundtrack:
-                            add "authorName" xpos 6
+                if old_ui:
+                    xoffset 330 # old pos but as offsets
+                    yoffset 390
+
+                    hbox: # adds a hbox to the area set
+                        box_wrap True # wraps text when full
+                        vbox:
+                            style_prefix "playerO" # sets prefix of style to a custom style called player
+                            add "titleName"
+                        vbox:
+                            style_prefix "playerBO" # another custom style to fit the vboxes 
+                            if current_soundtrack:
+                                add "authorName" xpos 6
+                else:
+                    xoffset 703 # old pos but as offsets
+                    yoffset 220
+
+                    hbox: # adds a hbox to the area set
+                        vbox:
+                            style_prefix "playerN" # sets prefix of style to a custom style called player
+                            add "titleName"
+                    hbox:
+                        vbox:
+                            style_prefix "playerBN" # another custom style to fit the vboxes 
+                            if current_soundtrack:
+                                add "authorName" xpos 6
+                
         else:
             # same but for alternative formating
             vbox:
-                xoffset 330
-                yoffset 390
+                if old_ui:
+                    xoffset 330 # old pos but as offsets
+                    yoffset 390
+                else:
+                    xoffset 705 # old pos but as offsets
+                    yoffset 220
                 hbox:
                     box_wrap True
                     vbox:
@@ -221,24 +268,40 @@ screen music_player:
         if current_soundtrack.description:
             viewport id "desc":
                 mousewheel True
-                xpos 640
-                ypos 520
-                child_size (700, None)
+                if old_ui:
+                    xpos 640
+                    ypos 520
+                else:
+                    xpos 710
+                    ypos 320
+                xsize 580
+                xfill True
+                #child_size (700, None)
                 style "music_player_description_viewport"
                 add "songDescription"
             vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
 
-        bar value Preference ("music_player_mixer volume") style "music_player_volume_bar"
+        if old_ui:
+            bar value Preference ("music_player_mixer volume") style "music_player_volumeO_bar"
+        else:
+            bar value Preference ("music_player_mixer volume") style "music_player_volumeN_bar"
 
         imagebutton:
-            style "volume_options_hbox"
+            if old_ui:
+                style "volume_optionsO_hbox"
+            else:
+                style "volume_optionsN_hbox"
             idle ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", "mod_assets/music_player/volume.png", "True", "mod_assets/music_player/volumeOn.png")
             action [Function(mute_player)]
 
         # displays the time elapsed of the soundtrack
         if current_soundtrack:
-            add "readablePos" xpos 540 ypos 480
-            add "readableDur" xpos 620 ypos 480
+            if old_ui:
+                add "readablePos" xpos 540 ypos 480
+                add "readableDur" xpos 620 ypos 480
+            else:
+                add "readablePos" xpos 330 ypos 540
+                add "readableDur" xpos 970 ypos 540
     
     #button returns to main menu
     textbutton "Main Menu":
@@ -261,20 +324,71 @@ transform cover_art_fade(x,y):
     linear 0.2 alpha 1
 
 #play and pause button position
-style play_pause_button_hbox:
+style play_pause_buttonO_hbox:
     pos (335, 520)
     spacing 25
 
-style music_options_hbox:
+style music_optionsO_hbox:
     pos (335, 570)
     spacing 25
+
+style volume_optionsO_hbox:
+    pos (323, 481)
+
+style playerO_vbox: # controls title formatting
+    xsize 510 # controls length of title box
+    xfill True # fills text in the box
+
+style playerBO_vbox: # controls artist formatting
+    xsize 430  # controls length of author box
+    xfill True # fills text in the box
+
+#the slider that indicates how far music is
+style music_player_timeO_bar:
+    xsize 900
+    pos (320, 460)
+    thumb "gui/slider/horizontal_hover_thumb.png"
+
+#slider that controls player music sound
+style music_player_volumeO_bar:
+    xsize 150
+    pos (373, 490)
+    thumb "gui/slider/horizontal_hover_thumb.png"
+
+style play_pause_buttonN_hbox:
+    pos (715, 410)
+    spacing 25
+
+style music_optionsN_hbox:
+    pos (715, 450)
+    spacing 25
+
+style volume_optionsN_hbox:
+    pos (1075, 507)
+
+style playerN_vbox: # controls title formatting
+    xsize 580
+    xfill True
+
+style playerBN_vbox: # controls artist formatting
+    xsize 580
+    xfill True
+
+    #the slider that indicates how far music is
+style music_player_timeN_bar:
+    xsize 400
+    pos (330, 520)
+    thumb "gui/slider/horizontal_hover_thumb.png"
+
+    #slider that controls player music sound
+style music_player_volumeN_bar:
+    xsize 120
+    pos (1130, 520)
+    thumb "gui/slider/horizontal_hover_thumb.png"
 
 style music_options_hboxB:
     pos (335, 610)
     spacing 25
-
-style volume_options_hbox:
-    pos (323, 481)
 
 style l_default: # default responsible for other l_ info
     font gui.default_font
@@ -289,14 +403,6 @@ style l_list is l_default: # controls list formatting
     left_padding 20
     size 16
     xfill True
-
-style player_vbox: # controls title formatting
-    xsize 510 # controls length of title box
-    xfill True # fills text in the box
-
-style playerB_vbox: # controls artist formatting
-    xsize 430  # controls length of author box
-    xfill True # fills text in the box
 
 style music_navigation_button_text:
     font "gui/font/RifficFree-Bold.ttf"
@@ -340,18 +446,6 @@ style music_player_description_text:
     size 25
     outlines[]
     color "#000"
-
-#the slider that indicates how far music is
-style music_player_time_bar:
-    xsize 900
-    pos (320, 460)
-    thumb "gui/slider/horizontal_hover_thumb.png"
-
-#slider that controls player music sound
-style music_player_volume_bar:
-    xsize 150
-    pos (373, 490)
-    thumb "gui/slider/horizontal_hover_thumb.png"
 
 #style for the scrollable music list 
 style music_player_viewport:
