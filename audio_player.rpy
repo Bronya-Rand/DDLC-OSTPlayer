@@ -12,7 +12,7 @@ define randomSong = False
 define loopSong = False
 define priorityScan = 2
 default old_volume = 0.0
-define ostVersion = "1.33"
+define ostVersion = "1.34"
 
 init python:
     def music_pos(d, refresh):
@@ -492,6 +492,9 @@ init python:
             self.update_interval = update_interval
             self.adjustment = None
             self._hovered = False
+            if int(renpy.version()[7]) == 6:
+                self.max_offset = 1.0
+                self.old_pos = 0.0
 
         def get_pos_duration(self):
             
@@ -519,10 +522,22 @@ init python:
 
         def set_pos(self, value):
             loopThis = self.get_song_options_status()
-            if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
-                renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
-                if loopThis:
-                    renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
+            if int(renpy.version()[7]) >= 7:
+                if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
+                    renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
+                    if loopThis:
+                        renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
+            else:
+                if not isinstance(current_soundtrack, soundtrack):
+                    return
+    
+                if value >= self.adjustment.range - self.max_offset / 2:
+                    return
+    
+                if abs(value - self.old_pos) > self.max_offset:
+                    renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
+                    if loopThis:
+                        renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
 
             return
 
@@ -533,6 +548,9 @@ init python:
             if pos and pos <= duration:
                 self.adjustment.set_range(duration)
                 self.adjustment.change(pos)
+                if int(renpy.version()[7]) == 6:
+                    self.old_pos = pos
+                    
             if pos > duration - 0.20:
                 if loopThis:
                     renpy.music.play(current_soundtrack.path, self.channel, loop=True)
