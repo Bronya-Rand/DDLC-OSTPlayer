@@ -12,8 +12,10 @@ define randomSong = False
 define loopSong = False
 define priorityScan = 2
 default old_volume = 0.0
-define old_ui = False
 define ostVersion = "1.34"
+
+init -1:
+    default persistent.old_ui = False
 
 init python:
     def music_pos(d, refresh):
@@ -40,7 +42,7 @@ init python:
             return Text("", style="song_progress", size=40), 0.0
 
         if renpy.music.is_playing(channel='music_player'): # checks if music is playing
-            time_duration = renpy.music.get_duration(channel='music_player') or time_duration # sets duration to what renpy thinks it lasts
+            time_duration = renpy.music.get_duration(channel='music_player') or current_soundtrack.byteTime # sets duration to what renpy thinks it lasts
         else:
             time_duration = time_duration
 
@@ -150,13 +152,13 @@ screen music_player:
 
     if current_soundtrack:
         if current_soundtrack.cover_art:
-            if old_ui:
+            if persistent.old_ui:
                 add "coverArt" at cover_art_fade(500, 200)
             else:
                 add "coverArt" at cover_art_fade(505, 300)
 
         hbox:
-            if old_ui:
+            if persistent.old_ui:
                 style "play_pause_buttonO_hbox"
             else:
                 style "play_pause_buttonN_hbox"
@@ -173,7 +175,7 @@ screen music_player:
                 idle "mod_assets/music_player/forward.png"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
         hbox:
-            if old_ui:
+            if persistent.old_ui:
                 style "music_optionsO_hbox"
             else:
                 style "music_optionsN_hbox"
@@ -189,32 +191,32 @@ screen music_player:
             imagebutton:
                 idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
                 action [ToggleVariable("randomSong", False, True)]
-            if not old_ui:
+            if not persistent.old_ui:
                 imagebutton:
                     idle "mod_assets/music_player/refreshList.png"
                     action [Function(refresh_list)]
                 imagebutton:
-                    idle ConditionSwitch("old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
-                    action [ToggleVariable("old_ui", False, True)]
-        if old_ui:
+                    idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
+                    action [ToggleField(persistent, "old_ui", False, True)]
+        if persistent.old_ui:
             hbox:
                 style "music_options_hboxB"
                 imagebutton:
                     idle "mod_assets/music_player/refreshList.png"
                     action [Function(refresh_list)]
                 imagebutton:
-                    idle ConditionSwitch("old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
-                    action [ToggleVariable("old_ui", False, True)]
+                    idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
+                    action [ToggleField(persistent, "old_ui", False, True)]
 
         bar:
-            if old_ui:
+            if persistent.old_ui:
                 xsize 500
             else:
                 xsize 710
             value bar_val
             hovered bar_val.hovered
             unhovered bar_val.unhovered
-            if old_ui:
+            if persistent.old_ui:
                 style "music_player_timeO_bar"
             else:
                 style "music_player_timeN_bar"
@@ -222,7 +224,7 @@ screen music_player:
         #displaying name of current soundtrack and authon
         if current_soundtrack.author:
             vbox: # sets the vbox for the song name / artist name
-                if old_ui:
+                if persistent.old_ui:
                     xoffset 330 # old pos but as offsets
                     yoffset 390
 
@@ -252,7 +254,7 @@ screen music_player:
         else:
             # same but for alternative formating
             vbox:
-                if old_ui:
+                if persistent.old_ui:
                     xoffset 330 # old pos but as offsets
                     yoffset 390
                 else:
@@ -268,7 +270,7 @@ screen music_player:
         if current_soundtrack.description:
             viewport id "desc":
                 mousewheel True
-                if old_ui:
+                if persistent.old_ui:
                     xpos 640
                     ypos 520
                 else:
@@ -281,13 +283,13 @@ screen music_player:
                 add "songDescription"
             vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
 
-        if old_ui:
+        if persistent.old_ui:
             bar value Preference ("music_player_mixer volume") style "music_player_volumeO_bar"
         else:
             bar value Preference ("music_player_mixer volume") style "music_player_volumeN_bar"
 
         imagebutton:
-            if old_ui:
+            if persistent.old_ui:
                 style "volume_optionsO_hbox"
             else:
                 style "volume_optionsN_hbox"
@@ -296,7 +298,7 @@ screen music_player:
 
         # displays the time elapsed of the soundtrack
         if current_soundtrack:
-            if old_ui:
+            if persistent.old_ui:
                 add "readablePos" xpos 540 ypos 480
                 add "readableDur" xpos 620 ypos 480
             else:
@@ -564,7 +566,8 @@ init python:
                         current_soundtrack = soundtracks[0]
                 break
 
-        renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
+        if current_soundtrack != False:
+            renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
 
     def random_song():
         global current_soundtrack
@@ -577,7 +580,8 @@ init python:
                 unique = 0
                 current_soundtrack = soundtracks[a]
 
-        renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
+        if current_soundtrack != False:
+            renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
 
     @renpy.pure
     class AdjustableAudioPositionValue(BarValue):
@@ -587,8 +591,8 @@ init python:
             self.adjustment = None
             self._hovered = False
             if int(renpy.version()[7]) == 6:
-                self.max_offset = 1.0
-                self.old_pos = 0.0
+                self.max_offset = renpy.music.get_duration(self.channel) or time_duration
+                self.old_pos = renpy.music.get_pos(self.channel) or 0.0
 
         def get_pos_duration(self):
             
@@ -656,7 +660,7 @@ init python:
             return self.update_interval
     
     class soundtrack:
-        def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, time = False, description = False, cover_art = False):
+        def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, byteTime = False, description = False, cover_art = False):
             #name that will be displayed
             self.name = name
             #name that will be displayed in 
@@ -667,8 +671,8 @@ init python:
             self.priority = priority
             #author names
             self.author = author
-            # time duration of the song
-            self.time = time
+            # byte time duration of song (backup for some songs)
+            self.byteTime = byteTime
             #description of soundtrack
             self.description = description
             #path to the cover art image
@@ -679,6 +683,7 @@ init python:
         
     # grabs info from the mp3/ogg (and cover if available)
     def get_info(path, tags):   
+        sec = tags.duration
         try:
             image_data = tags.get_image()
             jpgregex = r"\\xFF\\xD8\\xFF"
@@ -692,12 +697,12 @@ init python:
                 
             with open(gamedir + '/track/covers/' + altAlbum + cover_formats, 'wb') as f: # writes image data with proper extension to destination
                 f.write(image_data)
-            return tags.title, tags.artist, altAlbum, cover_formats, tags.album, tags.comment
+            return tags.title, tags.artist, sec, altAlbum, cover_formats, tags.album, tags.comment
         except TypeError:
-            return tags.title, tags.artist, None, None, tags.album, tags.comment
+            return tags.title, tags.artist, sec, None, None, tags.album, tags.comment
     
     # makes a ogg class for all ogg files
-    def def_ogg(title, artist, priority, altAlbum, cover_formats, y, album, comments):
+    def def_ogg(title, artist, priority, sec, altAlbum, cover_formats, y, album, comments):
         if title is None: # checks if the file has a title
             title = "Unknown OGG File " + str(y)
         if artist is None: # checks if the file has an artist 
@@ -725,12 +730,13 @@ init python:
             full_name = title,
             author = artist,
             path = path,
+            byteTime = sec,
             priority = priorityScan,
             description = description,
             cover_art = cover_formats
         )
 
-    def def_mp3(title, artist, path, priority, altAlbum, cover_formats, y, album, comment):
+    def def_mp3(title, artist, path, priority, sec, altAlbum, cover_formats, y, album, comment):
         if title is None: # checks if the file has a title
             title = "Unknown MP3 File " + str(y)
         if artist is None: #checks if the file has an artist 
@@ -758,6 +764,7 @@ init python:
             full_name = title,
             author = artist,
             path = path,
+            byteTime = sec,
             priority = priorityScan,
             description = description,
             cover_art = cover_formats
@@ -775,8 +782,8 @@ init python:
                 for y in range(mp3ListLengthA):
                     path = playableMP3List[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_mp3(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_mp3(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
             else:
                 mp3List = glob.glob(gamedir + '/track/*.mp3') # lists out all song paths in a array
                 playableMP3List = glob.glob(gamedir + '/track/*.mp3')
@@ -784,8 +791,8 @@ init python:
                 for y in range(mp3ListLength):
                     path = playableMP3List[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the mp3 and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_mp3(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
+                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_mp3(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the mp3
 
     def scan_ogg():
         global oggList, playableOGGList
@@ -799,8 +806,8 @@ init python:
                 for y in range(oggListLengthA):
                     path = playableOGGList[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the oggs and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_ogg(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
+                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_ogg(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
             else:
                 oggList = glob.glob(gamedir + '/track/*.ogg') # lists out all song paths in a array
                 playableOGGList = glob.glob(gamedir + '/track/*.ogg')
@@ -808,8 +815,8 @@ init python:
                 for y in range(oggListLength):
                     path = playableOGGList[y].replace("\\", "/") # changes path to be python path
                     tags = TinyTag.get(path, image=True) # opens the ogg and reads the metadata | image=True allows TinyTag to read cover images from files
-                    title, artist, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
-                    def_ogg(title, artist, path, priorityScan, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
+                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) # calls get_info() to obtain song info
+                    def_ogg(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment) # makes a class to play/display the ogg
     
     def resort():
         soundtracks = []
