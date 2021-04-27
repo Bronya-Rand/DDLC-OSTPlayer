@@ -1,16 +1,28 @@
 Installation:
 
 1. Copy the ZIP files to your DDLC game folder of your mod.
-2. Open screens.rpy in a text editor and add this line under lines 443-478
+  a. If you are on MacOS/OS X, you must right-click DDLC.app and click Show Package Contents 
+  then navigate to Contents/Resources/autorun and drop the ZIP file contents in there.
+  
+  b. If you already have Nikso's Audio Player installed in your mod and are upgrading 
+  to this one, copy the ZIP contents to your mod's game folder and delete audio_player.rpy 
+  from within within mod_assets.
 
-if main_menu:
-    textbutton _("OST Player") action [Show("music_player"), SetMute("music", True), SetMute("music_player_mixer", False), SetVariable("current_soundtrack", False), If(renpy.game.preferences.mute.get("music", False), true=SetVariable("music_was_muted_before_soundtrack_player_opened", True), false=SetVariable("music_was_muted_before_soundtrack_player_opened", False)), Function(refresh_list)]
+2. Open screens.rpy in a text editor and add this line under lines 443-478.
+  a. Replace the original button from Nikso's Audio Player with this one.
 
-(Recommended but Optional) 3. Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
+    if main_menu:
+        textbutton _("OST Player") action [Show("music_player"), SetMute("music", True), SetMute("music_player_mixer", False), SetVariable("current_soundtrack", False), If(renpy.game.preferences.mute.get("music", False), true=SetVariable("music_was_muted_before_soundtrack_player_opened", True), false=SetVariable("music_was_muted_before_soundtrack_player_opened", False)), Function(refresh_list)]
+  
+3. Open options.rpy and add this line under line 192.
+
+    build.classify("game/RPASongMetadata.json", "scripts all")
+
+(Recommended but Optional) 4. Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
     a. Copy the riffic-bold.ttf in the Fonts folder and paste it into the game/mod_assets/music_player folder
     b. Open audio_player.rpy and add a # to the front of lines 280, 302 and 311. Then remove the # in the front of lines 281, 303 and 312.
 
-3. Add music to the track folder or define them manually in audio_player.rpy
-4. Run DDLC and enjoy!
+5. Add music to the track folder or define them manually in audio_player.rpy
+6. Run DDLC and enjoy!
 
 Read README.md on Github or here for more information.
