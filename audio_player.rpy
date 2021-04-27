@@ -970,7 +970,7 @@ init python:
     )
     manualDefineList.append(Wake_Up_Unchanged)
 
-    if not config.developer:
+    if config.developer:
         rpa_mapping()
     
     rpa_load_mapping()
