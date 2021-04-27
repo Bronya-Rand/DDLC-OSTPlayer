@@ -680,7 +680,6 @@ init python:
             else:
                 self.cover_art = cover_art  
     
-    renpyFileList = renpy.list_files(common=False)
     mp3List = []
     oggList = []
     playableMP3List = []
@@ -688,6 +687,11 @@ init python:
     manualDefineList = []
     gamedir = config.gamedir.replace("\\", "/")
     global manualDefineList
+    
+    try: os.mkdir(gamedir + "/track")
+    except: pass
+    try: os.mkdir(gamedir + "/track/covers")
+    except: pass
 
     # maps track files in track folder before building the game
     def rpa_mapping():
