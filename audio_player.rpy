@@ -12,7 +12,7 @@ define randomSong = False
 define loopSong = False
 define priorityScan = 2
 default old_volume = 0.0
-define ostVersion = "1.34"
+define ostVersion = "1.35"
 
 init -1:
     default persistent.old_ui = False
