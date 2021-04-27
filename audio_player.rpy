@@ -687,7 +687,7 @@ init python:
     manualDefineList = []
     gamedir = config.gamedir.replace("\\", "/")
     global manualDefineList
-    
+
     try: os.mkdir(gamedir + "/track")
     except: pass
     try: os.mkdir(gamedir + "/track/covers")
@@ -802,7 +802,7 @@ init python:
         else:
             description = None 
         
-        oggList[y] = soundtrack(
+        playableOGGList[y] = soundtrack(
             name = title,
             full_name = title,
             author = artist,
