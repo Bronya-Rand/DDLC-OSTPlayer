@@ -477,7 +477,7 @@ style music_player_viewport:
 
 init python:
     from tinytag import TinyTag
-    import os, glob, time, re, gc, random, json
+    import os, glob, time, re, gc, random, json, pygame
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
 
     # Converts the time to a readable time
@@ -615,9 +615,6 @@ init python:
             self.update_interval = update_interval
             self.adjustment = None
             self._hovered = False
-            if int(renpy.version()[7]) == 6:
-                self.max_offset = renpy.music.get_duration(self.channel) or time_duration
-                self.old_pos = renpy.music.get_pos(self.channel) or 0.0
 
         def get_pos_duration(self):
             
@@ -645,24 +642,10 @@ init python:
 
         def set_pos(self, value):
             loopThis = self.get_song_options_status()
-            if int(renpy.version()[7]) >= 7:
-                if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
-                    renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
-                    if loopThis:
-                        renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
-            else:
-                if not isinstance(current_soundtrack, soundtrack):
-                    return
-    
-                if value >= self.adjustment.range - self.max_offset / 2:
-                    return
-    
-                if abs(value - self.old_pos) > self.max_offset:
-                    renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
-                    if loopThis:
-                        renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
-
-            return
+            if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
+                renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
+                if loopThis:
+                    renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
 
         def periodic(self, st):
 
@@ -671,8 +654,6 @@ init python:
             if pos and pos <= duration:
                 self.adjustment.set_range(duration)
                 self.adjustment.change(pos)
-                if int(renpy.version()[7]) == 6:
-                    self.old_pos = pos
                     
             if pos > duration - 0.20:
                 if loopThis:
@@ -719,7 +700,7 @@ init python:
             tags = TinyTag.get(gamedir + "/" + path, image=True) 
             title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) 
             data.append ({
-                "class": re.sub(r"-|'|", "_", title),
+                "class": re.sub(r"-|'", "_", title),
                 "title": title,
                 "artist": artist,
                 "path": path,
@@ -972,8 +953,8 @@ init python:
     )
     manualDefineList.append(Wake_Up_Unchanged)
 
-    if config.developer:
-        rpa_mapping()
+    # if config.developer:
+    #     rpa_mapping()
     
     rpa_load_mapping()
 
