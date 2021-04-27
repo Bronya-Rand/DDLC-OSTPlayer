@@ -708,6 +708,7 @@ init python:
     gamedir = config.gamedir.replace("\\", "/")
     global manualDefineList
 
+    # maps track files in track folder before building the game
     def rpa_mapping():
         data = []
         songTemp = ["track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3") or x.endswith(".ogg")]
@@ -731,6 +732,7 @@ init python:
         with open(gamedir + "/RPASongMetadata.json", "a") as f:
             json.dump(data, f)
 
+    # loads the JSON file that holds RPA metadata
     def rpa_load_mapping():
         with renpy.file("RPASongMetadata.json") as f:
             data = json.load(f)
