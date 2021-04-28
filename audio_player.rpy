@@ -477,7 +477,7 @@ style music_player_viewport:
 
 init python:
     from tinytag import TinyTag
-    import os, glob, time, re, gc, random, json, pygame
+    import os, glob, time, re, gc, random, json, pygame_sdl2
     renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
 
     # Converts the time to a readable time
@@ -704,7 +704,7 @@ init python:
             tags = TinyTag.get(gamedir + "/" + path, image=True) 
             title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) 
             data.append ({
-                "class": re.sub(r"-|'", "_", title),
+                "class": re.sub(r"-|'| ", "_", title),
                 "title": title,
                 "artist": artist,
                 "path": path,
@@ -719,8 +719,12 @@ init python:
 
     # loads the JSON file that holds RPA metadata
     def rpa_load_mapping():
-        with renpy.file("RPASongMetadata.json") as f:
-            data = json.load(f)
+        try:
+            with renpy.file("RPASongMetadata.json") as f:
+                data = json.load(f)
+        except:
+            return
+
         for p in data:
             title, artist, path, sec, altAlbum, cover_formats, album, comment = p['title'], p['artist'], p["path"], p["sec"], p["altAlbum"], p["cover_formats"], p["album"], p["comment"]
             
@@ -934,7 +938,6 @@ init python:
     ### Template for Manual Soundtracks
     # This method still works however now you must include manualDefineList.append(variable) 
     # to add it properly for refreshing
-
     your_reality = soundtrack(
         name = "Your reality",
         full_name = "Your reality",
@@ -957,9 +960,9 @@ init python:
     )
     manualDefineList.append(Wake_Up_Unchanged)
 
-    if config.developer:
+    if config.developer == True:
         rpa_mapping()
-    
-    rpa_load_mapping()
+    else:
+        rpa_load_mapping()
 
     resort()
