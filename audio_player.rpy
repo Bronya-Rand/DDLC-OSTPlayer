@@ -77,11 +77,11 @@ init python:
         author = len(current_soundtrack.author)
 
         if author <= 32:
-            authorNameSize = 25
+            authorNameSize = 24
         elif author <= 48:
-            authorNameSize = 23
+            authorNameSize = 22
         else:
-            authorNameSize = 21
+            authorNameSize = 20
 
         d = Text(current_soundtrack.author, style="music_player_song_author_text", size=authorNameSize)
         return d, 0.20
@@ -110,7 +110,7 @@ init python:
             renpy.file(gamedir + "/RPASongMetadata.json")
             return Text("", style="music_player_song_author_text", size=23), 0.0
         except:
-            return Text("{b}Warning:{/b} The RPA metadata file hasn't been generated. Songs in the \"track\" that are compiled into a RPA\nwon't work without it. Enable {i}Developer Mode{/i} in order to generate this file.", style="music_player_description_text", size=20), 0.0
+            return Text("{b}Warning:{/b} The RPA metadata file hasn't been generated. Songs in the {i}track{/i} folder that are archived into\n a RPA won't work without it. Set {i}config.developer{/i} to {i}True{/i} in order to generate this file.", style="music_player_description_text", size=20), 0.0
 
 image readablePos = DynamicDisplayable(music_pos)
 image readableDur = DynamicDisplayable(music_dur) 
@@ -249,48 +249,51 @@ screen music_player:
                             if current_soundtrack:
                                 add "authorName" xpos 6
                 else:
-                    xoffset 703
-                    yoffset 220
+                    xoffset 700
+                    yoffset 208
 
                     hbox:
                         vbox:
-                            style_prefix "playerN"
+                            if persistent.old_ui:    
+                                style_prefix "playerO"
+                            else:
+                                style_prefix "playerO"
                             add "titleName"
                     hbox:
                         vbox:
                             style_prefix "playerBN"
                             if current_soundtrack:
-                                add "authorName" xpos 6
-                
+                                add "authorName" xpos 6 ypos -3
+                    hbox:
+                        vbox:
+                            style_prefix "playerCN"
+                            if current_soundtrack.description:
+                                add "songDescription" xpos 6
         else:
             vbox:
                 if persistent.old_ui:
                     xoffset 330
                     yoffset 390
                 else:
-                    xoffset 705 
-                    yoffset 220
+                    xoffset 700 
+                    yoffset 208
                 hbox:
                     box_wrap True
                     vbox:
                         style_prefix "player"
-                        text "[current_soundtrack.full_name]" style "music_player_music_text" size title_size 
-
-        if current_soundtrack.description:
-            viewport id "desc":
-                mousewheel True
-                if persistent.old_ui:
+                        text "[current_soundtrack.full_name]" style "music_player_music_text" size title_size
+        if persistent.old_ui:
+            if current_soundtrack.description:
+                viewport id "desc":
+                    mousewheel True
                     xpos 640
                     ypos 520
-                else:
-                    xpos 710
-                    ypos 320
-                xsize 580
-                xfill True
-                style "music_player_description_viewport"
-                add "songDescription"
-            vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
-
+                    xsize 580
+                    xfill True
+                    style "music_player_description_viewport"
+                    add "songDescription"
+                vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
+        
         if persistent.old_ui:
             bar value Preference ("music_player_mixer volume") style "music_player_volumeO_bar"
         else:
@@ -393,6 +396,10 @@ style playerBN_vbox:
     xsize 580
     xfill True
 
+style playerCN_vbox: 
+    xsize 580
+    xfill True
+
 #the slider that indicates how far music is
 style music_player_timeN_bar:
     xsize 400
@@ -466,7 +473,7 @@ style music_player_description_viewport:
 #style for description text
 style music_player_description_text:
     font "mod_assets/music_player/NotoSansSC-Light.otf"
-    size 25
+    size 24
     outlines[]
     color "#000"
 
@@ -960,7 +967,7 @@ init python:
     )
     manualDefineList.append(Wake_Up_Unchanged)
 
-    if config.developer == True:
+    if not config.developer:
         rpa_mapping()
     else:
         rpa_load_mapping()
