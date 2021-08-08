@@ -135,6 +135,7 @@ class TinyTag(object):
             b'^fLaC': Flac,
             b'^\x30\x26\xB2\x75\x8E\x66\xCF\x11\xA6\xD9\x00\xAA\x00\x62\xCE\x6C': Wma,
             b'....ftypM4A': MP4,  # https://www.file-recovery.com/m4a-signature-format.htm
+            b'\xff\xf1': MP4,  # https://www.garykessler.net/library/file_sigs.html
         }
         header = fh.peek(max(len(sig) for sig in magic_bytes_mapping))
         for magic, parser in magic_bytes_mapping.items():
@@ -211,8 +212,12 @@ class TinyTag(object):
                 current, total = value.split('/')[:2]
                 setattr(self, "%s_total" % fieldname, total)
             else:
-                current = value
+                # Converting 'track', 'disk' to string for type consistency.
+                current = str(value) if isinstance(value, int) else value
             setattr(self, fieldname, current)
+        elif fieldname in ("track_total", "disc_total") and isinstance(value, int):
+            # Converting to string 'track_total', 'disc_total' for type consistency.
+            setattr(self, fieldname, str(value))
         else:
             setattr(self, fieldname, value)
 
