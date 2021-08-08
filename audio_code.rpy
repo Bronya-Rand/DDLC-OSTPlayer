@@ -1,4 +1,6 @@
 
+# Based off ost.py from Renpy-Universal-Player but Ren'Py 6 compatible
+
 init python:
     import time, random, re, glob, os, json
     import pygame_sdl2
