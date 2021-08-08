@@ -1,133 +1,15 @@
-#init -1 default soundtracks = [your_reality, your_reality_2]
-default current_soundtrack = False
-default soundtrack_position = 0.0
-default soundtrack_duration = 0.0
-default time_position = 0.0 # Music Position (Temp Var)
-default time_duration = 3.0 # Music Duration (Temp Var)
-default audio.current_soundrack_pause = False
-default music_was_muted_before_soundtrack_player_opened = False
-define organizeAZ = False
-define organizePriority = True
-define randomSong = False
-define loopSong = False
-define priorityScan = 2
-default old_volume = 0.0
-define ostVersion = "1.35"
 
 init -1:
     default persistent.old_ui = False
 
-init python:
-    # displays current music time position
-    def music_pos(d, refresh):
-        global time_position
-        global time_duration
-
-        if current_soundtrack == False:
-            return Text("", style="song_progress", size=40), 0.0
-
-        if renpy.music.is_playing(channel='music_player'): 
-            time_position = renpy.music.get_pos(channel='music_player') or time_position 
-        else:
-            if time_position > time_duration - 0.20:
-                time_position = 0.0
-
-        readableTime = convert_time(time_position) 
-        d = Text(readableTime, style="song_progress") 
-        return d, 0.20
-
-    # displays current music time duration
-    def music_dur(d, refresh):
-        global time_duration
-
-        if current_soundtrack == False:
-            return Text("", style="song_progress", size=40), 0.0
-
-        if renpy.music.is_playing(channel='music_player'):
-            time_duration = renpy.music.get_duration(channel='music_player') or current_soundtrack.byteTime
-        else:
-            time_duration = time_duration
-
-        readableDuration = convert_time(time_duration)
-        d = Text(readableDuration, style="song_progress")     
-        return d, 0.20
-
-    # displays current music title
-    def dynamic_title_text(d, refresh):
-        if current_soundtrack == False:
-            return Text("Exiting...", style="music_player_music_text", size=36), 0.0
-
-        title = len(current_soundtrack.full_name)
-
-        if title <= 21: 
-            songNameSize = 37 
-        elif title <= 28:
-            songNameSize = 29
-        else:
-            songNameSize = 23
-
-        d = Text(current_soundtrack.full_name, style="music_player_music_text", size=songNameSize)
-        return d, 0.20
-
-    # displays current music author
-    def dynamic_author_text(d, refresh):
-        if current_soundtrack == False: 
-            return Text("", style="music_player_song_author_text", size=23), 0.0
-
-        author = len(current_soundtrack.author)
-
-        if author <= 32:
-            authorNameSize = 24
-        elif author <= 48:
-            authorNameSize = 22
-        else:
-            authorNameSize = 20
-
-        d = Text(current_soundtrack.author, style="music_player_song_author_text", size=authorNameSize)
-        return d, 0.20
-
-    # displays current music cover art
-    def refresh_cover_data(d, refresh):
-        if current_soundtrack == False:
-            return Text("", style="music_player_song_author_text", size=23), 0.0
-
-        if persistent.old_ui:
-            d = Image(current_soundtrack.cover_art)
-        else:
-            d = Image(current_soundtrack.cover_art)
-        return d, 0.20
-
-    # displays current music description
-    def dynamic_description_text(d, refresh):
-        if current_soundtrack == False: 
-            return Text("", style="music_player_song_author_text", size=23), 0.0
-
-        d = Text("[current_soundtrack.description]", style="music_player_description_text")
-        return d, 0.20
-
-    def rpa_mapping_detection(d, refresh):
-        try: 
-            renpy.file(gamedir + "/RPASongMetadata.json")
-            return Text("", style="music_player_song_author_text", size=23), 0.0
-        except:
-            return Text("{b}Warning:{/b} The RPA metadata file hasn't been generated. Songs in the {i}track{/i} folder that are archived into\n a RPA won't work without it. Set {i}config.developer{/i} to {i}True{/i} in order to generate this file.", style="music_player_description_text", size=20), 0.0
-
-image readablePos = DynamicDisplayable(music_pos)
-image readableDur = DynamicDisplayable(music_dur) 
-image titleName = DynamicDisplayable(dynamic_title_text) 
-image authorName = DynamicDisplayable(dynamic_author_text) 
+image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress"))
+image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_progress")) 
+image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)("music_player_music_text")) 
+image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)("music_player_song_author_text")) 
 image coverArt = DynamicDisplayable(refresh_cover_data) 
-image songDescription = DynamicDisplayable(dynamic_description_text) 
-image rpa_map_warning = DynamicDisplayable(rpa_mapping_detection) 
-
-label music_player:
-    call screen music_player()
-    hide screen music_player
-    return
-
-label exit_loop:
-    $ renpy.music.stop(channel='music_player',fadeout=2.0)
-    $ renpy.full_restart()
+image songDescription = DynamicDisplayable(renpy.curry(dynamic_description_text)("music_player_song_author_text")) 
+image rpa_map_warning = DynamicDisplayable(renpy.curry(rpa_mapping_detection)("music_player_song_author_text"))
+image playPauseButton = DynamicDisplayable(auto_play_pause_button)
 
 screen music_player:
 
@@ -177,12 +59,9 @@ screen music_player:
             imagebutton:
                 idle "mod_assets/music_player/backward.png"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
-            imagebutton:
-                idle "mod_assets/music_player/play.png"
-                action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_play)]
-            imagebutton:
-                idle "mod_assets/music_player/pause.png"
-                action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_pause)]
+
+            add "playPauseButton"
+
             imagebutton:
                 idle "mod_assets/music_player/forward.png"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
@@ -246,8 +125,7 @@ screen music_player:
                             add "titleName"
                         vbox:
                             style_prefix "playerBO"
-                            if current_soundtrack:
-                                add "authorName" xpos 6
+                            add "authorName" xpos 6
                 else:
                     xoffset 700
                     yoffset 208
@@ -262,26 +140,13 @@ screen music_player:
                     hbox:
                         vbox:
                             style_prefix "playerBN"
-                            if current_soundtrack:
-                                add "authorName" xpos 6 ypos -3
+                            add "authorName" xpos 6 ypos -3
                     hbox:
                         vbox:
                             style_prefix "playerCN"
                             if current_soundtrack.description:
                                 add "songDescription" xpos 6
-        else:
-            vbox:
-                if persistent.old_ui:
-                    xoffset 330
-                    yoffset 390
-                else:
-                    xoffset 700 
-                    yoffset 208
-                hbox:
-                    box_wrap True
-                    vbox:
-                        style_prefix "player"
-                        text "[current_soundtrack.full_name]" style "music_player_music_text" size title_size
+        
         if persistent.old_ui:
             if current_soundtrack.description:
                 viewport id "desc":
@@ -314,19 +179,19 @@ screen music_player:
             else:
                 add "readablePos" xpos 330 ypos 540
                 add "readableDur" xpos 970 ypos 540
-    
-    textbutton "Main Menu":
-        text_style "navigation_button_text"
-        align (0.045,0.95)
-        action [Hide("music_player"), If(music_was_muted_before_soundtrack_player_opened, true=None, false=SetMute("music", False)), Jump("exit_loop")]
 
-    text "OST-Player v[ostVersion]":
+    text "DDLC OST-Player v[ostVersion]":
         xalign 1.0 yalign 1.0
         xoffset -10 yoffset -10
         style "main_menu_version"
     
-    if not config.developer:
+    if not renpy.config.developer:
         add "rpa_map_warning" xpos 0.23 ypos 0.9
+
+    textbutton _("Return"):
+        style "return_button"
+
+        action [Return(), If(renpy.music.is_playing(channel='music_player'), true=Function(current_music_pause), false=None), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
 
 #transform for the cover art
 transform cover_art_fade(x,y):
@@ -481,495 +346,3 @@ style music_player_description_text:
 style music_player_viewport:
     xsize 210
     ysize 600
-
-init python:
-    from tinytag import TinyTag
-    import os, glob, time, re, gc, random, json, pygame_sdl2
-    renpy.music.register_channel("music_player", mixer = "music_player_mixer", loop = False)
-
-    # Converts the time to a readable time
-    def convert_time(x):
-        readableTime = time.gmtime(float(x))
-        res = time.strftime("%M:%S",readableTime)
-        return res
-
-    # Pauses the song and saves it's pause spot
-    def current_music_pause():
-        global soundtrack_position
-        global soundtrack_duration
-
-        if renpy.music.get_pos(channel = 'music_player') is None:
-            return
-
-        soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 1.6
-        soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
-
-        if soundtrack_position is not None:
-            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-
-        renpy.music.stop(channel='music_player',fadeout=2.0)
-
-    # Starts the song from it's pause spot
-    def current_music_play():
-        global time_position
-
-        if renpy.music.get_pos(channel = 'music_player') is not None:
-            return
-
-        if audio.current_soundrack_pause is False:
-            renpy.music.play(current_soundtrack.path, channel = 'music_player', loop=loopSong, fadein=2.0)
-        else:
-            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=loopSong, fadein=2.0)
-            if loopSong:
-                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True, fadein=2.0)
-    
-    # Forwards track by 5 seconds
-    def current_music_forward():
-        global soundtrack_position
-        global soundtrack_duration
-
-        if renpy.music.get_pos(channel = 'music_player') is None:
-            soundtrack_position = soundtrack_position + 5
-        else:
-            soundtrack_position = renpy.music.get_pos(channel = 'music_player') + 5
-
-        soundtrack_duration = renpy.music.get_duration(channel = 'music_player')
-
-        if soundtrack_position >= soundtrack_duration: 
-            soundtrack_position = 0.0
-            audio.current_soundrack_pause = False
-            if randomSong:
-                random_song()
-            else:
-                next_track()
-        else:
-            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-
-            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
-            if loopSong:
-                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
-
-    # Rewinds track by 5 seconds
-    def current_music_backward():
-        global soundtrack_position
-
-        if renpy.music.get_pos(channel = 'music_player') is None:
-            soundtrack_position = soundtrack_position - 5
-        else:
-            soundtrack_position = renpy.music.get_pos(channel = 'music_player') - 5
-
-        if soundtrack_position <= 0.0:
-            soundtrack_position = 0.0
-            audio.current_soundrack_pause = False
-            next_track(back=True)
-        else:
-            audio.current_soundrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
-            
-            renpy.music.play(audio.current_soundrack_pause, channel = 'music_player', loop=False)
-            if loopSong:
-                renpy.music.queue(current_soundtrack.path, channel = 'music_player', loop=True)
-
-    # Mutes audio from the player
-    def mute_player():
-        global old_volume
-
-        if preferences.get_volume("music_player_mixer") != 0.0:
-            old_volume = preferences.get_volume("music_player_mixer")
-            preferences.set_volume("music_player_mixer", 0.0)
-        else:
-            preferences.set_volume("music_player_mixer", old_volume)
-
-    # Advances to next track or track behind the current track
-    def next_track(back=False):
-        global current_soundtrack
-
-        for st in range(len(soundtracks)):
-            if current_soundtrack == soundtracks[st]:
-                try:
-                    if back:
-                        current_soundtrack = soundtracks[st-1]
-                    else:
-                        current_soundtrack = soundtracks[st+1]
-                except:
-                    if back:
-                        current_soundtrack = soundtracks[len(soundtracks)-1]
-                    else:
-                        current_soundtrack = soundtracks[0]
-                break
-
-        if current_soundtrack != False:
-            renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
-
-    # Advances to a random track
-    def random_song():
-        global current_soundtrack
-
-        random.seed()
-        unique = 1
-        while unique != 0:
-            a = random.randrange(0,len(soundtracks)-1)
-            if current_soundtrack != soundtracks[a]:
-                unique = 0
-                current_soundtrack = soundtracks[a]
-
-        if current_soundtrack != False:
-            renpy.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
-
-    @renpy.pure
-    class AdjustableAudioPositionValue(BarValue):
-        def __init__(self, channel='music_player', update_interval=0.0):
-            self.channel = channel
-            self.update_interval = update_interval
-            self.adjustment = None
-            self._hovered = False
-
-        def get_pos_duration(self):
-            
-            pos = renpy.music.get_pos(self.channel) or 0.0
-            duration = renpy.music.get_duration(self.channel) or time_duration
-
-            return pos, duration
-
-        def get_song_options_status(self):
-            global loopSong
-            global randomSong
-
-            return loopSong, randomSong
-
-        def get_adjustment(self):
-            pos, duration = self.get_pos_duration()
-            self.adjustment = ui.adjustment(value=pos, range=duration, changed=self.set_pos, adjustable=True)
-            return self.adjustment
-
-        def hovered(self):
-            self._hovered = True
-
-        def unhovered(self):
-            self._hovered = False
-
-        def set_pos(self, value):
-            loopThis = self.get_song_options_status()
-            if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
-                renpy.music.play("<from {}>".format(value) + current_soundtrack.path, self.channel)
-                if loopThis:
-                    renpy.music.queue(current_soundtrack.path, self.channel, loop=True)
-
-        def periodic(self, st):
-
-            pos, duration = self.get_pos_duration()
-            loopThis, doRandom = self.get_song_options_status()
-            if pos and pos <= duration:
-                self.adjustment.set_range(duration)
-                self.adjustment.change(pos)
-                    
-            if pos > duration - 0.20:
-                if loopThis:
-                    renpy.music.play(current_soundtrack.path, self.channel, loop=True)
-                elif doRandom:
-                    random_song()
-                else:
-                    next_track()
-
-            return self.update_interval
-    
-    # Handles the necessary file information for the soundtrack player
-    class soundtrack:
-        def __init__(self, name = "", full_name = "", path = "", priority = 2, author = False, byteTime = False, description = False, cover_art = False):
-            self.name = name
-            self.full_name = full_name
-            self.path = path
-            self.priority = priority
-            self.author = author
-            self.byteTime = byteTime
-            self.description = description
-            if cover_art == False:
-                self.cover_art = "mod_assets/music_player/nocover.png"
-            else:
-                self.cover_art = cover_art  
-    
-    mp3List = []
-    oggList = []
-    playableMP3List = []
-    playableOGGList = []
-    manualDefineList = []
-    gamedir = config.gamedir.replace("\\", "/")
-    global manualDefineList
-
-    try: os.mkdir(gamedir + "/track")
-    except: pass
-    try: os.mkdir(gamedir + "/track/covers")
-    except: pass
-
-    # maps track files in track folder before building the game
-    def rpa_mapping():
-        data = []
-        songTemp = ["track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3") or x.endswith(".ogg")]
-        try: os.remove(config.gamedir + "/RPASongMetadata.json")
-        except: pass
-        for y in range(len(songTemp)):
-            path = songTemp[y].replace("\\", "/") 
-            tags = TinyTag.get(gamedir + "/" + path, image=True) 
-            title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) 
-            data.append ({
-                "class": re.sub(r"-|'| ", "_", title),
-                "title": title,
-                "artist": artist,
-                "path": path,
-                "sec": sec,
-                "altAlbum": altAlbum,
-                "cover_formats": cover_formats,
-                "album": album,
-                "comment": comment
-            })
-        with open(gamedir + "/RPASongMetadata.json", "a") as f:
-            json.dump(data, f)
-
-    # loads the JSON file that holds RPA metadata
-    def rpa_load_mapping():
-        try:
-            with renpy.file("RPASongMetadata.json") as f:
-                data = json.load(f)
-        except:
-            return
-
-        for p in data:
-            title, artist, path, sec, altAlbum, cover_formats, album, comment = p['title'], p['artist'], p["path"], p["sec"], p["altAlbum"], p["cover_formats"], p["album"], p["comment"]
-            
-            if title is None: 
-                title = "Unknown RPA Song " + str(p)
-            if artist is None: 
-                artist = "Unknown Artist"
-            if cover_formats is None: 
-                description = "Unknown RPA Song File"
-                cover_formats = "mod_assets/music_player/nocover.png" 
-            else:
-                cover_formats = "track/covers/"+altAlbum+cover_formats
-                try:
-                    renpy.image_size(cover_formats)
-                except:
-                    cover_formats = "mod_assets/music_player/nocover.png" 
-            if album is not None: 
-                if comment is not None: 
-                    description = album + '\n' + comment 
-                else:
-                    description = album 
-            else:
-                description = None 
-
-            p['class'] = soundtrack(
-                name = title,
-                full_name = title,
-                author = artist,
-                path = path,
-                byteTime = sec,
-                priority = priorityScan,
-                description = description,
-                cover_art = cover_formats
-            )
-            manualDefineList.append(p['class'])
-
-    # Obtains Track Info
-    def get_info(path, tags):   
-        sec = tags.duration
-
-        try:
-            image_data = tags.get_image()
-            jpgregex = r"\\xFF\\xD8\\xFF"
-
-            match = re.search(jpgregex, image_data) 
-            if match:
-                cover_formats=".jpg" 
-            else:
-                cover_formats=".png" 
-            altAlbum = re.sub(r"\[|\]|/|:|\?",'', tags.album) # converts problematic symbols to nothing i.e Emotion [Deluxe] to Emotion Deluxe
-                
-            with open(gamedir + '/track/covers/' + altAlbum + cover_formats, 'wb') as f:
-                f.write(image_data)
-
-            return tags.title, tags.artist, sec, altAlbum, cover_formats, tags.album, tags.comment
-        except TypeError:
-            return tags.title, tags.artist, sec, None, None, tags.album, tags.comment
-    
-    # Makes a OGG class for a OGG track to the OST Player
-    def def_ogg(title, artist, priority, sec, altAlbum, cover_formats, y, album, comments):
-        if title is None: 
-            title = "Unknown OGG File " + str(y)
-        if artist is None: 
-            artist = "Unknown Artist"
-        if cover_formats is None: 
-            description = "Non-Metadata OGG"
-            cover_formats = "mod_assets/music_player/nocover.png" 
-        else:
-            cover_formats = "track/covers/"+altAlbum+cover_formats
-            try:
-                renpy.image_size(cover_formats)
-            except:
-                cover_formats = "mod_assets/music_player/nocover.png" 
-        if album is not None: 
-            if comment is not None: 
-                description = album + '\n' + comment 
-            else:
-                description = album 
-        else:
-            description = None 
-        
-        playableOGGList[y] = soundtrack(
-            name = title,
-            full_name = title,
-            author = artist,
-            path = path,
-            byteTime = sec,
-            priority = priorityScan,
-            description = description,
-            cover_art = cover_formats
-        )
-
-    # Makes a MP3 class for a MP3 track to the OST Player
-    def def_mp3(title, artist, path, priority, sec, altAlbum, cover_formats, y, album, comment):
-        if title is None:
-            title = "Unknown MP3 File " + str(y)
-        if artist is None:
-            artist = "Unknown Artist"
-        if cover_formats is None:
-            description = "Non-Metadata MP3"
-            cover_formats = "mod_assets/music_player/nocover.png" 
-        else:
-            cover_formats = "track/covers/"+altAlbum+cover_formats
-            try:
-                renpy.image_size(cover_formats)
-            except:
-                cover_formats = "mod_assets/music_player/nocover.png"
-        if album is not None: 
-            if comment is not None: 
-                description = album + '\n' + comment 
-            else:
-                description = album
-        else:
-            description = None
-
-        playableMP3List[y] = soundtrack(
-            name = title,
-            full_name = title,
-            author = artist,
-            path = path,
-            byteTime = sec,
-            priority = priorityScan,
-            description = description,
-            cover_art = cover_formats
-        )
-
-    #Scans MP3 tracks to the OST Player
-    def scan_mp3():
-        global mp3List, playableMP3List
-
-        if glob.glob(gamedir + '/track/*.mp3'): 
-            if len(mp3List) != 0: 
-                for x in reversed(range(len(playableMP3List))): 
-                    playableMP3List.pop(x)
-
-                mp3List = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3")] 
-                playableMP3List = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".mp3")]
-                mp3ListLengthA = len(playableMP3List) 
-
-                for y in range(mp3ListLengthA):
-                    path = playableMP3List[y].replace("\\", "/") 
-                    tags = TinyTag.get(path, image=True) 
-                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) 
-                    def_mp3(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment)
-            else:
-                mp3List = glob.glob(gamedir + '/track/*.mp3') 
-                playableMP3List = glob.glob(gamedir + '/track/*.mp3')
-                mp3ListLength = len(playableMP3List) 
-
-                for y in range(mp3ListLength):
-                    path = playableMP3List[y].replace("\\", "/") 
-                    tags = TinyTag.get(path, image=True) 
-                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags)
-                    def_mp3(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment)
-
-    # Scans OGG tracks to the OST Player
-    def scan_ogg():
-        global oggList, playableOGGList
-
-        if glob.glob(gamedir + '/track/*.ogg'): 
-
-            if len(oggList) != 0:
-                for x in reversed(range(len(playableOGGList))): 
-                    playableOGGList.pop(x)
-
-                oggList = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".ogg")] 
-                playableOGGList = [gamedir + "/track\\" + x for x in os.listdir(gamedir + '/track') if x.endswith(".ogg")]
-                oggListLengthA = len(playableOGGList) 
-
-                for y in range(oggListLengthA):
-                    path = playableOGGList[y].replace("\\", "/") 
-                    tags = TinyTag.get(path, image=True) 
-                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) 
-                    def_ogg(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment) 
-            else:
-                oggList = glob.glob(gamedir + '/track/*.ogg') 
-                playableOGGList = glob.glob(gamedir + '/track/*.ogg')
-                oggListLength = len(playableOGGList)
-
-                for y in range(oggListLength):
-                    path = playableOGGList[y].replace("\\", "/")
-                    tags = TinyTag.get(path, image=True) 
-                    title, artist, sec, altAlbum, cover_formats, album, comment = get_info(path, tags) 
-                    def_ogg(title, artist, path, priorityScan, sec, altAlbum, cover_formats, y, album, comment) 
-    
-    # Sorts tracks A-Z, Priority or both
-    def resort():
-        soundtracks = []
-        global soundtracks
-
-        for obj in playableMP3List: 
-            soundtracks.append(obj)
-        for obj in playableOGGList:
-            soundtracks.append(obj)
-        for obj in manualDefineList:
-            soundtracks.append(obj)
-        if organizeAZ:
-            soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.name)
-        if organizePriority:
-            soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.priority)
-
-    # Rescans tracks to the OST Player
-    def refresh_list():
-        scan_mp3() 
-        scan_ogg()
-        resort()
-
-    scan_mp3()
-    scan_ogg()
-    
-    ### Template for Manual Soundtracks
-    # This method still works however now you must include manualDefineList.append(variable) 
-    # to add it properly for refreshing
-    your_reality = soundtrack(
-        name = "Your reality",
-        full_name = "Your reality",
-        path = "bgm/credits.ogg",
-        priority = 1,
-        author = "Monika",
-        description = "I made mistakes, hurt you, hurt my friends. All I can do is hope you all forgive me.",
-        cover_art = False
-    )     
-    manualDefineList.append(your_reality)
-    
-    Wake_Up_Unchanged = soundtrack(
-        name = "Unchanged",
-        full_name = "Wake up unchanged",
-        path = "mod_assets/music_player/sample/Unchanged.ogg",
-        priority = 0,
-        author = "PabloLuaxerc#1719",
-        description = "Sad soundtrack",
-        cover_art = "mod_assets/music_player/cover/cover.png"
-    )
-    manualDefineList.append(Wake_Up_Unchanged)
-
-    if not config.developer:
-        rpa_mapping()
-    else:
-        rpa_load_mapping()
-
-    resort()
