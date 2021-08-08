@@ -1,13 +1,13 @@
-# DDLC-OSTPlayer
+# DDLC OST-Player
 
-A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**1.34**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.0**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
 <img src="assets/screenshot0001.png" alt="New UI" width=420x> 
 <img src="assets/screenshot0002.png" alt="Old UI" width=420x>
 
 **DISCLAIMER:** This is not afiliated or endorsed by Team Salvato or Nikso. The Scattered Stars <u>Logo</u> in `Wake Up Unchanged` is not free to use, but is only allowed in this build as a display to the soundtrack player. If you plan to use this, remove it in your final build.
 
-> All songs featured above are owned by the developer and are not included in DDLC-OSTPlayer. (Shoo UMG, SME and all other major labels.)
+> All songs featured above are owned by the developer and are not included in DDLC OST-Player. (Shoo UMG, SME, Rooster Teeth and all other major labels.)
 
 ## Credits
 
@@ -22,6 +22,7 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Ver
 - raphaelsilva (Pixabay) - Shuffle Icon
 - Josy_Dom_Alexis (Pixabay) - Volume Icon
 - Google - Noto Sans SC Font (Author/Description Tag)
+- Ren'Py Discord - Feedback on Ren'Py Universal Player Feats Now In DDLC OST-Player
 - Weiss Schnee - Support (Weiss :D)
 
 ## What does this do?
@@ -30,87 +31,69 @@ This allows the user to play the soundtrack of mods outside the main story, side
 
 ## What does this version improve on?
 
-1. Ability to play MP3's.
+1. Ability to play MP3, OGG, WAV and OPUS files with metadata!
 2. Improved music player aesthetic.
 3. Dynamic title and font size changes (sort of) and cover art scaling.
-4. Song metadata support.
-5. Sideload songs from your playlist to be played with the mod's tracks.
-6. RPA Playback and Metadata Support
+4. Sideload songs from your playlist to be played with the mod's tracks.
+5. RPA/APK Playback and Metadata Support
    > You will need to enable Developer Mode in order to make the metadata of songs in the track RPA folder generate for distribution.
-7. Forward and Rewind back a song in progress.
-8. Refresh Song List Support.
-9. Sorting from within the player.
-10. Replay/Shuffle Support
-11. Automatically jumps to the next song after current song has ended.
-12. Improved fonts for some languages. See Notes Below.
+6. Improved fonts for some languages. See a example [here.](assets/screenshot0006.png)
 
-    > Due to languages and font character limits, the fonts in DDLC-OSTPlayer will not cover all languages.
-
-    > Riffic-Bold will have to be downloaded separately to comply with the FontSpring license.
+    > Due to languages and font character limits, the fonts in DDLC OST-Player will not cover all languages. Riffic-Bold will have to be downloaded separately to comply with the FontSpring license.
+7. Android Support!
 
 ## What do I need to run this?
 
-1. Copy of DDLC from [DDLC.moe](https://ddlc.moe)
-2. The Latest DDLC-OSTPlayer [ZIP File](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+> This assumes you already have a copy of DDLC with the mod template installed over it.
+
+1. The Latest DDLC OST-Player [ZIP File](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
    > If you already have Nikso's Audio Player installed in your mod and are upgrading to this one, copy the ZIP contents to your mod's game folder **and** delete the `audio_player.rpy` file from within within `mod_assets`.
-3. **(Recommended but Optional)** Riffic-Bold from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) to add more font characters to the program.
+2. **(Recommended but Optional)** Riffic-Bold from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) to add more font characters to the program.
    > This font is free, but requires you to make a Fontspring account and have a _Desktop license_ for it in order for you to use this.
-4. **(Optional)** Custom Music in a folder called `track` in the `game` folder
-   > You can change this folder name or path to something else if you like. Do let people knowing that you changed it if they want to sideload songs to it.
 
 ## How do I install this?
 
-1. Drop all the contents in this ZIP file to the game folder where DDLC.exe/DDLC.sh is.
+> This assumes you already have a copy of DDLC with the mod template installed over it.
+
+1. Drop all the contents in this ZIP file into the `game` folder.
    > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun/game` and drop the ZIP file contents in there.
-2. Open `options.rpy` and add this line under line `192`
+2. Open *options.rpy* and add this line under line `192`
    ```py
    build.classify("game/RPASongMetadata.json", "scripts all")
    ```
+3. Copy this line to *screens.rpy* under `textbutton _("Load Game")` and restart DDLC.
+   ```py
+   textbutton _("Music Room") action [ShowMenu("music_player"), Function(get_music_channel_info), Stop('music', fadeout=2.0), Function(refresh_list)]
+   ```
 3. **(Recommended but Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` in _Fonts_ to `game/mod_assets/music_player`
-   - Open `audio_player.rpy` and add a `#` to the front of lines `280`, `302` and `311`. Then remove the `#` in the front of lines `281`, `303` and `312`.
-
-## How do I access the player?
-
-Copy this line to `screens.rpy` under lines `443-478` and restart DDLC.
-
-```python
-if main_menu:
-    textbutton _("OST Player") action [Show("music_player"), SetMute("music", True), SetMute("music_player_mixer", False), SetVariable("current_soundtrack", False), If(renpy.game.preferences.mute.get("music", False), true=SetVariable("music_was_muted_before_soundtrack_player_opened", True), false=SetVariable("music_was_muted_before_soundtrack_player_opened", False)), Function(refresh_list)]
-```
+   - Open *audio_player.rpy* and add a `#` to the front of lines `287`, `303` and `312`. Then remove the `#` in the front of lines `288`, `304` and `313`.
+4. Put music in the `track` folder inside the `game` folder and try it out!
 
 ## Can I still define songs the old way?
 
-Yes you can. The old format still works despite the revamp however you must add this line after defining it.
+Yes you can. The old format still works however you must add this line after defining it.
 
-```python
+```py
 manualDefineList.append(Wake_Up_Unchanged)
 ```
 
 > Change `Wake_Up_Unchanged` to your song variable
 
+Additionally you may use `unlocked` to lock some songs from playing until the player hears it in-game. See *manualtracks.rpy* for a example.
+
+> It is now recommended to move all the manual defines to *manualtracks.rpy* for easier define access versus doing so in *audio_player.rpy*.
+
 ## How do I priortize a song or make a song the first one?
 
-Set organizePriority to True and set the song priority by a value. 0 is the highest priority you can make a song be while 1, 2, etc. will be prioritzed lower in the list. i.e. `0 > 1 > 2 > ...`
-
-## How do I organize the list alphabetically?
-
-Turn on the A-Z Priority in the music player when playing a song or default it on, by setting `organizeAZ` to True.
-
-## Can the organizations work together?
-
-Yes. See the following organization images below.
-
-- [Priority Organization](assets/screenshot0024.png)
-- [A-Z Organization](assets/screenshot0020.png)
-- [A-Z and Priority Organization](assets/screenshot0025.png)
+Manually define your song and give it a priority value. 0 is the highest priority you can make a song be while 1, 2, etc. will be prioritzed lower in the list. i.e. *0 > 1 > 2 > ...*
 
 ## Why is there a file called `tinytag.py` in `python-packages`?
 
 This handles the metadata of songs sideloaded or those that have metadata in the game.
 
-## Why is `Riffic-Bold` not included in DDLC-OSTPlayer?
+## Why is `Riffic-Bold` not included in DDLC OST-Player?
 
-Riffic-Bold is not included in DDLC-OSTPlayer due to licensing issues with Fontspring. In order to install Riffic-Bold you will need to download it yourself as a _Desktop license_ and install it onto your project as listed above in **How do I install this?**
+Riffic-Bold is not included in DDLC OST-Player due to licensing issues with Fontspring. In order to install Riffic-Bold you will need to download it yourself as a _Desktop license_ and install it onto your project as listed above in **How do I install this?**
 
 ## How do I add metadata info?
 
