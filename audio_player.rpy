@@ -38,7 +38,7 @@ screen music_player:
                     style "l_list"
                     text_style "music_navigation_button_text"
                     if current_soundtrack:
-                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
                         action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
@@ -191,7 +191,7 @@ screen music_player:
     textbutton _("Return"):
         style "return_button"
 
-        action [Return(), If(pausedstate, true=None, false=Function(current_music_pause)), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
+        action [Return(), Function(check_paused_state), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
 
 #transform for the cover art
 transform cover_art_fade(x,y):
