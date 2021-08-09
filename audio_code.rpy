@@ -489,6 +489,9 @@ init python:
 
     def check_paused_state():
         global pausedstate
+        if current_soundtrack == False:
+            return
+            
         if pausedstate:
             return
         else:
