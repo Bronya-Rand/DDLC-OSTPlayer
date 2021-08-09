@@ -2,8 +2,9 @@
 
 A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.0**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
-<img src="assets/screenshot0001.png" alt="New UI" width=420x> 
-<img src="assets/screenshot0002.png" alt="Old UI" width=420x>
+
+<img src="assets/screenshot0001.png" alt="New UI" width=345x> 
+<img src="assets/screenshot0002.png" alt="Old UI" width=345x>
 
 **DISCLAIMER:** This is not afiliated or endorsed by Team Salvato or Nikso. The Scattered Stars <u>Logo</u> in `Wake Up Unchanged` is not free to use, but is only allowed in this build as a display to the soundtrack player. If you plan to use this, remove it in your final build.
 
