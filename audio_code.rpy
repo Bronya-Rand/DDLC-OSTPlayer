@@ -394,15 +394,16 @@ init python:
 
         if rescan:
             songList = []
-
+            
         for ext in file_types:
             songList += ["track/" + x for x in os.listdir(gamedir + '/track') if x.endswith(ext)]
 
         for y in range(len(songList)):
-            path = songList[y]
-            tags = TinyTag.get(gamedir + "/" + path, image=True) 
-            title, artist, sec, altAlbum, album, comment = get_info(path, tags)
-            def_song(title, artist, path, priorityScan, sec, altAlbum, y, album, comment, ext)
+            if "track/" in songList[y]:
+                path = songList[y]
+                tags = TinyTag.get(gamedir + "/" + path, image=True) 
+                title, artist, sec, altAlbum, album, comment = get_info(path, tags)
+                def_song(title, artist, path, priorityScan, sec, altAlbum, y, album, comment, ext)
 
     # Makes a class for a track to the OST Player
     def def_song(title, artist, path, priority, sec, altAlbum, y, album, comment, ext, unlocked=True, rpa=False):
@@ -486,8 +487,12 @@ init python:
         if prevTrack is None:
             prevTrack = False
 
-    def assign_track_to_py(track):
-        current_soundtrack = track
+    def check_paused_state():
+        global pausedstate
+        if pausedstate:
+            return
+        else:
+            current_music_pause()
 
     try: os.mkdir(gamedir + "/track")
     except: pass
