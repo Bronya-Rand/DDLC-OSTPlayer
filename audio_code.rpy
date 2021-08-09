@@ -41,6 +41,7 @@ init python:
     loopSong = False
     organizeAZ = False
     organizePriority = True
+    pausedstate = False
 
     random.seed()
 
@@ -235,7 +236,8 @@ init python:
 
     # Pauses the song and saves it's pause spot
     def current_music_pause():
-        global current_soundtrack_pause
+        global current_soundtrack_pause, pausedstate
+        pausedstate = True
 
         soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') + 1.6
 
@@ -246,6 +248,8 @@ init python:
 
     # Starts the song from it's pause spot
     def current_music_play():
+        global pausedstate
+        pausedstate = False
 
         if current_soundtrack_pause is False:
             renpy.audio.music.play(current_soundtrack.path, channel = 'music_player', fadein=2.0)

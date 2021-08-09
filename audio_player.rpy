@@ -191,7 +191,7 @@ screen music_player:
     textbutton _("Return"):
         style "return_button"
 
-        action [Return(), If(renpy.music.is_playing(channel='music_player'), true=Function(current_music_pause), false=None), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
+        action [Return(), If(pausedstate, true=None, false=Function(current_music_pause)), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
 
 #transform for the cover art
 transform cover_art_fade(x,y):
