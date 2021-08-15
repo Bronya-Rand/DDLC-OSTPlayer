@@ -23,7 +23,7 @@ init python:
     songList = []
     manualDefineList = []
     soundtracks = []
-    file_types = ['.mp3', '.ogg', '.opus', '.wav']
+    file_types = ('.mp3', '.ogg', '.opus', '.wav')
 
     # Stores soundtrack in progress
     current_soundtrack = False
@@ -346,11 +346,9 @@ init python:
             renpy.game.preferences.set_volume("music_player_mixer", old_volume)
 
     def refresh_list():
-        scan_song(rescan=True) # scans songs
+        scan_song() # scans songs
         if renpy.config.developer or renpy.config.developer == "auto":
             rpa_mapping()
-        else:
-            rpa_load_mapping()
         resort()
 
     def resort():
@@ -389,30 +387,32 @@ init python:
             return tags.title, tags.artist, sec, None, tags.album, tags.comment
 
     # Scans tracks to the OST Player
-    def scan_song(rescan=False):
+    def scan_song():
         global songList
 
-        if rescan:
-            songList = []
-            
-        for ext in file_types:
-            songList += ["track/" + x for x in os.listdir(gamedir + '/track') if x.endswith(ext)]
-
-        for y in range(len(songList)):
-            if "track/" in songList[y]:
-                path = songList[y]
+        exists = []
+        for x in songList[:]:
+            try:
+                renpy.file(x.path)
+                exists.append(x.path)    
+            except:
+                songList.remove(x)
+        
+        for x in os.listdir(gamedir + '/track'):
+            if x.endswith((file_types)) and "track/" + x not in exists:
+                path = "track/" + x
                 tags = TinyTag.get(gamedir + "/" + path, image=True) 
                 title, artist, sec, altAlbum, album, comment = get_info(path, tags)
-                def_song(title, artist, path, priorityScan, sec, altAlbum, y, album, comment, ext)
+                def_song(title, artist, path, priorityScan, sec, altAlbum, album, comment, unlocked=True)
 
     # Makes a class for a track to the OST Player
-    def def_song(title, artist, path, priority, sec, altAlbum, y, album, comment, ext, unlocked=True, rpa=False):
+    def def_song(title, artist, path, priority, sec, altAlbum, album, comment, unlocked=True):
         if title is None:
-            title = "Unknown " + str(ext.replace(".", "")).upper() + " File " + str(y)
+            title = str(path.replace("track/", "")).upper()
         if artist is None:
             artist = "Unknown Artist"
         if altAlbum is None:
-            description = "Non-Metadata " + str(ext.replace(".", "")).upper() + " File"
+            description = "Non-Metadata Song"
             altAlbum = "mod_assets/music_player/nocover.png" 
         else:
             altAlbum = "track/covers/"+altAlbum
@@ -427,8 +427,9 @@ init python:
                 description = album
         else:
             description = None
+        class_name = re.sub(r"-|'| ", "_", title)
 
-        songList[y] = soundtrack(
+        class_name = soundtrack(
             name = title,
             author = artist,
             path = path,
@@ -438,6 +439,7 @@ init python:
             cover_art = altAlbum,
             unlocked = unlocked
         )
+        songList.append(class_name)
 
     # maps track files in track folder before building the game
     def rpa_mapping():
