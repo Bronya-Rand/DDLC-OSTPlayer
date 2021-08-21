@@ -7,7 +7,7 @@ init python:
     from tinytag import TinyTag
 
     # Creation of Music Room and Code Setup
-    ostVersion = 2.0
+    ostVersion = 2.1
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
     if renpy.windows:
         gamedir = renpy.config.gamedir.replace("\\", "/")
