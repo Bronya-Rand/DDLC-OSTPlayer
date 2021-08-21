@@ -40,7 +40,7 @@ screen music_player:
                     if current_soundtrack:
                         action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
-                        action [SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
@@ -132,10 +132,7 @@ screen music_player:
 
                     hbox:
                         vbox:
-                            if persistent.old_ui:    
-                                style_prefix "playerO"
-                            else:
-                                style_prefix "playerO"
+                            style_prefix "playerN"
                             add "titleName"
                     hbox:
                         vbox:
@@ -174,8 +171,8 @@ screen music_player:
 
         if current_soundtrack:
             if persistent.old_ui:
-                add "readablePos" xpos 540 ypos 480
-                add "readableDur" xpos 620 ypos 480
+                add "readablePos" xpos 520 ypos 480
+                add "readableDur" xpos 635 ypos 480
             else:
                 add "readablePos" xpos 330 ypos 540
                 add "readableDur" xpos 970 ypos 540
@@ -233,7 +230,7 @@ style music_player_timeO_bar:
 
 #slider that controls player music sound
 style music_player_volumeO_bar:
-    xsize 150
+    xsize 120
     pos (373, 490)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
@@ -253,17 +250,13 @@ style volume_optionsN_hbox:
 
 #controls title formatting (New UI)
 style playerN_vbox: 
-    xsize 580
+    xsize 570
     xfill True
 
 #controls artist formatting (New UI)
-style playerBN_vbox: 
-    xsize 580
-    xfill True
+style playerBN_vbox is playerN_vbox
 
-style playerCN_vbox: 
-    xsize 580
-    xfill True
+style playerCN_vbox is playerN_vbox
 
 #the slider that indicates how far music is
 style music_player_timeN_bar:
