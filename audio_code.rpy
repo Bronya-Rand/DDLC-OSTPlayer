@@ -29,7 +29,7 @@ init python:
     current_soundtrack = False
 
     # Stores positions of track/volume/default priority
-    time_position = 0.0 
+    time_position = 0.0
     time_duration = 3.0
     old_volume = 0.0
     priorityScan = 2
@@ -76,11 +76,11 @@ init python:
             self._hovered = False
 
         def get_pos_duration(self):
-                
-            pos = renpy.audio.music.get_pos(self.channel) or 0.0
-            duration = renpy.audio.music.get_duration(self.channel) or time_duration
-            if current_soundtrack.byteTime:
-                duration = current_soundtrack.byteTime
+            if not renpy.audio.music.is_playing(self.channel):
+                pos = time_position
+            else:
+                pos = renpy.audio.music.get_pos(self.channel) or 0.0
+            duration = time_duration
 
             return pos, duration
 
@@ -125,16 +125,9 @@ init python:
 
     def music_pos(style_name, st, at):
         global time_position
-        global time_duration
 
-        if current_soundtrack == False: # failsafe to when user quits out of OST
-            return renpy.text.text.Text("", style=style_name, size=40), 0.0
-
-        if renpy.audio.music.is_playing(channel='music_player'): # checks if music is playing
-            time_position = renpy.audio.music.get_pos(channel='music_player') or time_position # grabs position of song
-        else:
-            if time_position > time_duration - 0.20:
-                time_position = 0.0
+        if renpy.audio.music.get_pos(channel='music_player') is not None:
+            time_position = renpy.audio.music.get_pos(channel='music_player')
 
         readableTime = convert_time(time_position) # converts to readable time for display
         d = renpy.text.text.Text(readableTime, style=style_name) 
@@ -142,22 +135,17 @@ init python:
 
     def music_dur(style_name, st, at):
         global time_duration
-
-        if current_soundtrack == False: # failsafe to when user quits out of OST
-            return renpy.text.text.Text("", style=style_name, size=40), 0.0
-
-        if renpy.audio.music.is_playing(channel='music_player'): # checks if music is playing
-            time_duration = renpy.audio.music.get_duration(channel='music_player') or time_duration # sets duration to what renpy thinks it lasts
+            
         if current_soundtrack.byteTime:
             time_duration = current_soundtrack.byteTime
+        else:
+            time_duration = renpy.audio.music.get_duration(channel='music_player') or time_duration # sets duration to what renpy thinks it lasts
 
         readableDuration = convert_time(time_duration) # converts to readable time for display
         d = renpy.text.text.Text(readableDuration, style=style_name)     
         return d, 0.20
 
     def dynamic_title_text(style_name, st, at):
-        if current_soundtrack == False: # failsafe to when user quits out of OST
-            return renpy.text.text.Text("Exiting...", size=int(36)), 0.0
 
         title = len(current_soundtrack.name) # grabs the length of the name and artist 
 
@@ -172,8 +160,6 @@ init python:
         return d, 0.20
 
     def dynamic_author_text(style_name, st, at):
-        if current_soundtrack == False: # failsafe to when user quits out of OST
-            return renpy.text.text.Text("", style=style_name, size=gui.text_size), 0.0
 
         author = len(current_soundtrack.author)
 
@@ -188,16 +174,12 @@ init python:
         return d, 0.20
 
     def refresh_cover_data(st, at):
-        if current_soundtrack == False: # failsafe to when user quits out of OST
-            return renpy.text.text.Text("", size=gui.text_size), 0.0
 
         d = renpy.display.im.image(current_soundtrack.cover_art)
         return d, 0.20
 
     # displays current music description
     def dynamic_description_text(style_name, st, at):
-        if current_soundtrack == False: 
-            return renpy.text.text.Text("", size=23), 0.0
 
         desc = len(current_soundtrack.description)
 
@@ -212,11 +194,12 @@ init python:
         return d, 0.20
 
     def auto_play_pause_button(st, at):
-        if current_soundtrack == False: 
-            return renpy.text.text.Text("", size=23), 0.0
         
         if renpy.audio.music.is_playing(channel='music_player'):
-            d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png", action=current_music_pause)
+            if pausedstate:
+                d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png", action=NullAction())
+            else:
+                d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png", action=current_music_pause)
         else:
             d = renpy.display.behavior.ImageButton("mod_assets/music_player/play.png", action=current_music_play)
         return d, 0.20
@@ -230,9 +213,24 @@ init python:
 
     # Converts the time to a readable time
     def convert_time(x):
-        readableTime = time.gmtime(float(x))
-        res = time.strftime("%M:%S",readableTime)
-        return res
+        hour = ""
+
+        if int (x / 3600) > 0:
+            hour = str(int(x / 3600))
+
+        if int(x / 60) < 10 and hour != "":
+            minute = ":0" + str(int(x / 60))
+        elif hour != "":
+            minute = ":" + str(int(x / 60))
+        else:
+            minute = str(int(x / 60))
+
+        if int(x % 60) < 10:
+            second = ":0" + str(int(x % 60))
+        else:
+            second = ":" + str(int(x % 60))
+
+        return hour + minute + second
 
     # Pauses the song and saves it's pause spot
     def current_music_pause():
@@ -242,7 +240,7 @@ init python:
         soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') + 1.6
 
         if soundtrack_position is not None:
-            current_soundtrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            current_soundtrack_pause = "<from "+ str(soundtrack_position) +">"+current_soundtrack.path
 
         renpy.audio.music.stop(channel='music_player',fadeout=2.0)
 
@@ -258,25 +256,21 @@ init python:
         
     # Forwards track by 5 seconds
     def current_music_forward():
-        global current_soundtrack_pause, time_duration
+        global current_soundtrack_pause
 
         if renpy.audio.music.get_pos(channel = 'music_player') is None:
             soundtrack_position = time_position + 5
         else:
             soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') + 5
 
-        soundtrack_duration = renpy.audio.music.get_duration(channel = 'music_player') or time_duration #! to handle latin duration issues
-        if current_soundtrack.byteTime:
-            time_duration = current_soundtrack.byteTime
-
-        if soundtrack_position >= soundtrack_duration: 
+        if soundtrack_position >= time_duration: 
             current_soundtrack_pause = False
             if randomSong:
                 random_song()
             else:
                 next_track()
         else:
-            current_soundtrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            current_soundtrack_pause = "<from "+ str(soundtrack_position) +">"+current_soundtrack.path
 
             renpy.audio.music.play(current_soundtrack_pause, channel = 'music_player')
 
@@ -293,7 +287,7 @@ init python:
             current_soundtrack_pause = False
             next_track(back=True)
         else:
-            current_soundtrack_pause = "<from "+str(soundtrack_position) +">"+current_soundtrack.path
+            current_soundtrack_pause = "<from "+ str(soundtrack_position) +">"+current_soundtrack.path
                 
             renpy.audio.music.play(current_soundtrack_pause, channel = 'music_player')
 
@@ -490,10 +484,6 @@ init python:
             prevTrack = False
 
     def check_paused_state():
-        global pausedstate
-        if current_soundtrack == False:
-            return
-            
         if pausedstate:
             return
         else:
