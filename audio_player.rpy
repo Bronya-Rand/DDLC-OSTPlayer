@@ -40,7 +40,7 @@ screen music_player:
                     if current_soundtrack:
                         action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
-                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
