@@ -2,8 +2,8 @@
 init -1:
     default persistent.old_ui = False
 
-image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress"))
-image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_progress")) 
+image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress_text"))
+image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_duration_text"))
 image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)("music_player_music_text")) 
 image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)("music_player_song_author_text")) 
 image coverArt = DynamicDisplayable(refresh_cover_data) 
@@ -23,24 +23,20 @@ screen music_player:
     side "c l":
         
         viewport id "vpo":
-            style "music_player_viewport"
             mousewheel True
+            style "music_player_viewport"
 
-            child_size (210, 600)
-
-            xpos 20
-            ypos 20
-
-            has vbox    
+            has vbox
             spacing gui.navigation_spacing
+            
             for st in soundtracks:
                 textbutton "[st.name]":
                     style "l_list"
                     text_style "music_navigation_button_text"
                     if current_soundtrack:
-                        action [SensitiveIf(current_soundtrack.name != st.name), SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SensitiveIf(current_soundtrack.name != st.name or current_soundtrack.author != st.author or current_soundtrack.description != st.description), SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
-                        action [SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
@@ -56,80 +52,95 @@ screen music_player:
                 style "play_pause_buttonO_hbox"
             else:
                 style "play_pause_buttonN_hbox"
+
             imagebutton:
                 idle "mod_assets/music_player/backward.png"
+                hover "mod_assets/music_player/backwardHover.png"
+                style "music_player_imagebutton"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
 
             add "playPauseButton"
 
             imagebutton:
                 idle "mod_assets/music_player/forward.png"
+                hover "mod_assets/music_player/forwardHover.png"
+                style "music_player_imagebutton"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
+
         hbox:
             if persistent.old_ui:
                 style "music_optionsO_hbox"
             else:
                 style "music_optionsN_hbox"
+
             imagebutton:
                 idle ConditionSwitch("organizeAZ", "mod_assets/music_player/A-ZOn.png", "True", "mod_assets/music_player/A-Z.png")
+                hover "mod_assets/music_player/A-ZHover.png"
+                style "music_player_imagebutton"
                 action [ToggleVariable("organizeAZ", False, True), Function(resort)]
             imagebutton:
                 idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
+                hover "mod_assets/music_player/priorityHover.png"
+                style "music_player_imagebutton"
                 action [ToggleVariable("organizePriority", False, True), Function(resort)]
             imagebutton:
                 idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", "True", "mod_assets/music_player/replay.png")
-                action [ToggleVariable("loopSong", False, True), Function(current_music_play)]
+                hover "mod_assets/music_player/replayHover.png"
+                style "music_player_imagebutton"
+                action [ToggleVariable("loopSong", False, True)]
             imagebutton:
                 idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
+                hover "mod_assets/music_player/shuffleHover.png"
+                style "music_player_imagebutton"
                 action [ToggleVariable("randomSong", False, True)]
             if not persistent.old_ui:
                 imagebutton:
                     idle "mod_assets/music_player/refreshList.png"
+                    hover "mod_assets/music_player/refreshHover.png"
+                    style "music_player_imagebutton"
                     action [Function(refresh_list)]
                 imagebutton:
                     idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
+                    hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", "True", "mod_assets/music_player/NewUIHover.png")
+                    style "music_player_imagebutton"
                     action [ToggleField(persistent, "old_ui", False, True)]
+
         if persistent.old_ui:
             hbox:
                 style "music_options_hboxB"
+
                 imagebutton:
                     idle "mod_assets/music_player/refreshList.png"
+                    hover "mod_assets/music_player/refreshHover.png"
+                    style "music_player_imagebutton"
                     action [Function(refresh_list)]
                 imagebutton:
                     idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
+                    hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", "True", "mod_assets/music_player/NewUIHover.png")
+                    style "music_player_imagebutton"
                     action [ToggleField(persistent, "old_ui", False, True)]
 
         bar:
-            if persistent.old_ui:
-                xsize 500
-            else:
-                xsize 710
-            value bar_val
-            hovered bar_val.hovered
-            unhovered bar_val.unhovered
             if persistent.old_ui:
                 style "music_player_timeO_bar"
             else:
                 style "music_player_timeN_bar"
 
+            value bar_val
+            hovered bar_val.hovered
+            unhovered bar_val.unhovered
+
         if current_soundtrack.author:
             vbox:
                 if persistent.old_ui:
-                    xoffset 330 
-                    yoffset 390
-
                     hbox: 
-                        box_wrap True 
                         vbox:
                             style_prefix "playerO"
                             add "titleName"
                         vbox:
                             style_prefix "playerBO"
-                            add "authorName" xpos 6
+                            add "authorName"
                 else:
-                    xoffset 700
-                    yoffset 208
-
                     hbox:
                         vbox:
                             style_prefix "playerN"
@@ -137,23 +148,21 @@ screen music_player:
                     hbox:
                         vbox:
                             style_prefix "playerBN"
-                            add "authorName" xpos 6 ypos -3
+                            add "authorName"
                     hbox:
                         vbox:
                             style_prefix "playerCN"
                             if current_soundtrack.description:
-                                add "songDescription" xpos 6
+                                add "songDescription"
         
         if persistent.old_ui:
             if current_soundtrack.description:
                 viewport id "desc":
                     mousewheel True
-                    xpos 640
-                    ypos 520
-                    xsize 580
-                    xfill True
                     style "music_player_description_viewport"
+
                     add "songDescription"
+
                 vbar value YScrollValue("desc") xpos 1250 ypos 470 ysize 200
         
         if persistent.old_ui:
@@ -167,15 +176,19 @@ screen music_player:
             else:
                 style "volume_optionsN_hbox"
             idle ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", "mod_assets/music_player/volume.png", "True", "mod_assets/music_player/volumeOn.png")
+            hover ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", "mod_assets/music_player/volumeHover.png", "True", "mod_assets/music_player/volumeOnHover.png")
             action [Function(mute_player)]
-
-        if current_soundtrack:
-            if persistent.old_ui:
-                add "readablePos" xpos 520 ypos 480
-                add "readableDur" xpos 635 ypos 480
-            else:
-                add "readablePos" xpos 330 ypos 540
-                add "readableDur" xpos 970 ypos 540
+        
+        if persistent.old_ui:
+            hbox:
+                xoffset 520
+                yoffset 480
+                
+                add "readablePos"
+                add "readableDur" xpos 100
+        else:
+            add "readablePos" xalign 0.28 yalign 0.78
+            add "readableDur" xalign 0.79 yalign 0.78
 
     text "DDLC OST-Player v[ostVersion]":
         xalign 1.0 yalign 1.0
@@ -187,155 +200,131 @@ screen music_player:
 
     textbutton _("Return"):
         style "return_button"
-
         action [Return(), Function(check_paused_state), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
 
-#transform for the cover art
 transform cover_art_fade(x,y):
     anchor(0.5, 0.5)
     pos(x, y)
-    size(350,350) # adjusts so any cover art is 350x350
+    size(350, 350)
     alpha 0
     linear 0.2 alpha 1
 
-#play and pause button position
 style play_pause_buttonO_hbox:
     pos (335, 520)
     spacing 25
 
-#controls music options position
-style music_optionsO_hbox:
+style music_optionsO_hbox is play_pause_buttonO_hbox:
     pos (335, 570)
-    spacing 25
 
-#controls volume position
-style volume_optionsO_hbox:
-    pos (323, 481)
+style volume_optionsO_hbox is play_pause_buttonO_hbox:
+    pos (325, 475)
  
 # controls title formatting
 style playerO_vbox:
+    xoffset 330 
+    yoffset 390
     xsize 510
     xfill True
 
 # controls artist formatting
-style playerBO_vbox: 
-    xsize 430
-    xfill True 
+style playerBO_vbox is playerO_vbox: 
+    xpos 15
+    xsize 420
 
-#the slider that indicates how far music is
 style music_player_timeO_bar:
-    xsize 900
+    xsize 450
     pos (320, 460)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
-#slider that controls player music sound
 style music_player_volumeO_bar:
     xsize 120
     pos (373, 490)
     thumb "gui/slider/horizontal_hover_thumb.png"
 
-#controls music control position (New UI)
-style play_pause_buttonN_hbox:
-    pos (715, 410)
-    spacing 25
+## New UI
+style play_pause_buttonN_hbox is play_pause_buttonO_hbox:
+    pos (715, 400)
 
-#controls music options position (New UI)
-style music_optionsN_hbox:
+style music_optionsN_hbox is music_optionsO_hbox:
     pos (715, 450)
-    spacing 25
 
-#controls volume position (New UI)
-style volume_optionsN_hbox:
-    pos (1075, 507)
+style volume_optionsN_hbox is play_pause_buttonO_hbox:
+    pos (1080, 504)
+    hover_sound gui.hover_sound
+    activate_sound gui.activate_sound
 
-#controls title formatting (New UI)
-style playerN_vbox: 
+style playerN_vbox is playerO_vbox: 
+    xoffset 700
+    yoffset 208
     xsize 570
-    xfill True
 
-#controls artist formatting (New UI)
-style playerBN_vbox is playerN_vbox
+style playerBN_vbox is playerN_vbox:
+    xpos 6
 
-style playerCN_vbox is playerN_vbox
+style playerCN_vbox is playerBN_vbox
 
-#the slider that indicates how far music is
-style music_player_timeN_bar:
-    xsize 400
+style music_player_timeN_bar is music_player_timeO_bar:
+    xsize 710
     pos (330, 520)
-    thumb "gui/slider/horizontal_hover_thumb.png"
 
-#slider that controls player music sound
-style music_player_volumeN_bar:
-    xsize 120
+style music_player_volumeN_bar is music_player_volumeO_bar:
     pos (1130, 520)
-    thumb "gui/slider/horizontal_hover_thumb.png"
 
-#style that handles additional buttons in the Old UI
-style music_options_hboxB:
+style music_options_hboxB is play_pause_buttonO_hbox:
     pos (335, 610)
-    spacing 25
-
-# default responsible for other l_ info
-style l_default:
-    font gui.default_font
-    #font "mod_assets/music_player/riffic-bold.ttf"
-    size 18
-    color gui.text_color
-    outlines [(2, "#000000aa", 0, 0)]
-    line_overlap_split 1
-    line_spacing 1
 
 # controls list formatting
-style l_list is l_default: 
+style l_list is default: 
     left_padding 20
     size 16
     xfill True
+    hover_sound gui.hover_sound
+    activate_sound gui.activate_sound
 
-#style for the list buttons
-style music_navigation_button_text:
+style music_navigation_button_text is navigation_button_text:
     font "gui/font/RifficFree-Bold.ttf"
     #font "mod_assets/music_player/riffic-bold.ttf"
-    color "#fff"
-    outlines [(4, "#b59", 0, 0), (2, "#b59", 2, 2)]
-    hover_outlines [(4, "#fac", 0, 0), (2, "#fac", 2, 2)]
-    insensitive_outlines [(4, "#fce", 0, 0), (2, "#fce", 2, 2)]
 
-#style for the name of the music that appears when it is playing
-style music_player_music_text:
-    font "gui/font/RifficFree-Bold.ttf"
-    #font "mod_assets/music_player/riffic-bold.ttf"
+style music_player_music_text is music_navigation_button_text:
     color "#000"
     outlines [(0, "#000", 0, 0)]
+    hover_outlines []
+    insensitive_outlines []
     size 36
 
-#style for author of the music
-style music_player_song_author_text is music_player_description_text
 style music_player_song_author_text:
     font "mod_assets/music_player/NotoSansSC-Light.otf"
     size 22
     outlines[]
     color "#000"
 
-# halogen for time progress
-style song_progress:
+style song_progress_text:
     font "gui/font/Halogen.ttf"
     size 25
     outlines[]
     color "#000"
+    text_align 0.0
+    xalign 0.28 yalign 0.78
 
-#style for viewport where description shows
+style song_duration_text is song_progress_text:
+    text_align 1.0
+    xalign 0.79 yalign 0.78
+
 style music_player_description_viewport:
-    xsize 600
+    xpos 640
+    ypos 520
+    xsize 580
+    xfill True
     ysize 200
 
-#style for description text
-style music_player_description_text:
-    font "mod_assets/music_player/NotoSansSC-Light.otf"
+style music_player_description_text is music_player_song_author_text:
     size 24
-    outlines[]
-    color "#000"
 
-#style for the scrollable music list 
 style music_player_viewport:
+    pos(20, 20)
     xsize 210
     ysize 600
+
+style music_player_imagebutton:
+    hover_sound gui.hover_sound
+    activate_sound gui.activate_sound
