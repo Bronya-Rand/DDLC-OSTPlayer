@@ -3,6 +3,7 @@ init python:
     ### Template for Manual Soundtracks
     # This method still works however now you must include manualDefineList.append(variable) 
     # to add it properly for refreshing
+
     your_reality = soundtrack(
         name = "Your reality",
         author = "Monika",
@@ -19,7 +20,7 @@ init python:
         priority = 0,
         author = "PabloLuaxerc#1719",
         description = "Sad soundtrack",
-        cover_art = "mod_assets/music_player/cover/cover.png"
+        cover_art = "mod_assets/music_player/sample/cover.png"
     )
     manualDefineList.append(Wake_Up_Unchanged)
 
@@ -29,6 +30,6 @@ init python:
     #     priority = 0,
     #     author = "Dan Salvato",
     #     description = "Example",
-    #     unlocked = False
+    #     unlocked = renpy.seen_audio("bgm/example.ogg")
     # )
     # manualDefineList.append(poem_panic)
