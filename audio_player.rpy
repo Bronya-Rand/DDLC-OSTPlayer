@@ -56,7 +56,6 @@ screen music_player:
             imagebutton:
                 idle "mod_assets/music_player/backward.png"
                 hover "mod_assets/music_player/backwardHover.png"
-                style "music_player_imagebutton"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
 
             add "playPauseButton"
@@ -64,7 +63,6 @@ screen music_player:
             imagebutton:
                 idle "mod_assets/music_player/forward.png"
                 hover "mod_assets/music_player/forwardHover.png"
-                style "music_player_imagebutton"
                 action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
 
         hbox:
@@ -76,33 +74,27 @@ screen music_player:
             imagebutton:
                 idle ConditionSwitch("organizeAZ", "mod_assets/music_player/A-ZOn.png", "True", "mod_assets/music_player/A-Z.png")
                 hover "mod_assets/music_player/A-ZHover.png"
-                style "music_player_imagebutton"
                 action [ToggleVariable("organizeAZ", False, True), Function(resort)]
             imagebutton:
                 idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
                 hover "mod_assets/music_player/priorityHover.png"
-                style "music_player_imagebutton"
                 action [ToggleVariable("organizePriority", False, True), Function(resort)]
             imagebutton:
                 idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", "True", "mod_assets/music_player/replay.png")
                 hover "mod_assets/music_player/replayHover.png"
-                style "music_player_imagebutton"
                 action [ToggleVariable("loopSong", False, True)]
             imagebutton:
                 idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
                 hover "mod_assets/music_player/shuffleHover.png"
-                style "music_player_imagebutton"
                 action [ToggleVariable("randomSong", False, True)]
             if not persistent.old_ui:
                 imagebutton:
                     idle "mod_assets/music_player/refreshList.png"
                     hover "mod_assets/music_player/refreshHover.png"
-                    style "music_player_imagebutton"
                     action [Function(refresh_list)]
                 imagebutton:
                     idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
                     hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", "True", "mod_assets/music_player/NewUIHover.png")
-                    style "music_player_imagebutton"
                     action [ToggleField(persistent, "old_ui", False, True)]
 
         if persistent.old_ui:
@@ -112,12 +104,10 @@ screen music_player:
                 imagebutton:
                     idle "mod_assets/music_player/refreshList.png"
                     hover "mod_assets/music_player/refreshHover.png"
-                    style "music_player_imagebutton"
                     action [Function(refresh_list)]
                 imagebutton:
                     idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
                     hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", "True", "mod_assets/music_player/NewUIHover.png")
-                    style "music_player_imagebutton"
                     action [ToggleField(persistent, "old_ui", False, True)]
 
         bar:
@@ -324,7 +314,3 @@ style music_player_viewport:
     pos(20, 20)
     xsize 210
     ysize 600
-
-style music_player_imagebutton:
-    hover_sound gui.hover_sound
-    activate_sound gui.activate_sound
