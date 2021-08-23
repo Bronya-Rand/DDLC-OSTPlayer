@@ -7,7 +7,7 @@ init python:
     from tinytag import TinyTag
 
     # Creation of Music Room and Code Setup
-    ostVersion = 2.0
+    ostVersion = 2.1
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
     if renpy.windows:
         gamedir = renpy.config.gamedir.replace("\\", "/")
@@ -348,11 +348,14 @@ init python:
         try:
             image_data = tags.get_image()
 
-            jpgbytes = bytes("\\xff\\xd8\\xff")
-            utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r")
+            with open(gamedir + "/python-packages/binaries.txt", "rb") as a:
+                lines = a.readlines()
 
-            jpgmatch = re.search(jpgbytes, image_data) 
-            utfmatch = re.search(utfbytes, image_data) 
+            jpgbytes = bytes("\\xff\\xd8\\xff")
+            utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\r\n")
+
+            jpgmatch = re.match(jpgbytes, image_data) 
+            utfmatch = re.match(utfbytes, image_data) 
 
             if jpgmatch:
                 cover_formats=".jpg" 
@@ -360,7 +363,7 @@ init python:
                 cover_formats=".png" 
 
                 if utfmatch: # addresses itunes cover descriptor fixes
-                    image_data = re.sub(utfbytes, bytes("‰PNG\\r"), image_data)
+                        image_data = re.sub(utfbytes, lines[2], image_data)
 
             coverAlbum = re.sub(r"\[|\]|/|:|\?",'', tags.album) 
             
@@ -387,7 +390,7 @@ init python:
             if x.endswith((file_types)) and "track/" + x not in exists:
                 path = "track/" + x
                 tags = TinyTag.get(gamedir + "/" + path, image=True) 
-                title, artist, sec, altAlbum, album, comment = get_info(path, tags)
+                title, artist, sec, altAlbum, album, comment =get_info (path, tags)
                 def_song(title, artist, path, priorityScan, sec, altAlbum, album, comment, unlocked=True)
 
     def def_song(title, artist, path, priority, sec, altAlbum, album, comment, unlocked=True):
