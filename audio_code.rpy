@@ -363,7 +363,7 @@ init python:
                 cover_formats=".png" 
 
                 if utfmatch: # addresses itunes cover descriptor fixes
-                        image_data = re.sub(utfbytes, lines[2], image_data)
+                    image_data = re.sub(utfbytes, lines[2], image_data)
 
             coverAlbum = re.sub(r"\[|\]|/|:|\?",'', tags.album) 
             
