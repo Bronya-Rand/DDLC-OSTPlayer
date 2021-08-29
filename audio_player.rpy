@@ -34,9 +34,16 @@ screen music_player:
                     style "l_list"
                     text_style "music_navigation_button_text"
                     if current_soundtrack:
-                        action [SensitiveIf(current_soundtrack.name != st.name or current_soundtrack.author != st.author or current_soundtrack.description != st.description), SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SensitiveIf(current_soundtrack.name != st.name 
+                                or current_soundtrack.author != st.author 
+                                or current_soundtrack.description != st.description), 
+                                SetVariable("current_soundtrack", st), 
+                                SetVariable("pausedstate", False), 
+                                Play("music_player", st.path, loop=loopSong, fadein=2.0)]
                     else:
-                        action [SetVariable("current_soundtrack", st), SetVariable("pausedstate", False), Play("music_player", st.path, loop=loopSong, fadein=2.0)]
+                        action [SetVariable("current_soundtrack", st), 
+                        SetVariable("pausedstate", False), 
+                        Play("music_player", st.path, loop=loopSong, fadein=2.0)]
 
         vbar value YScrollValue("vpo") xpos 1.0 ypos 20
 
@@ -56,14 +63,16 @@ screen music_player:
             imagebutton:
                 idle "mod_assets/music_player/backward.png"
                 hover "mod_assets/music_player/backwardHover.png"
-                action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
+                action [SensitiveIf(renpy.music.is_playing(channel='music_player')), 
+                        Function(current_music_backward)]
 
             add "playPauseButton"
 
             imagebutton:
                 idle "mod_assets/music_player/forward.png"
                 hover "mod_assets/music_player/forwardHover.png"
-                action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
+                action [SensitiveIf(renpy.music.is_playing(channel='music_player')), 
+                        Function(current_music_forward)]
 
         hbox:
             if persistent.old_ui:
@@ -72,19 +81,23 @@ screen music_player:
                 style "music_optionsN_hbox"
 
             imagebutton:
-                idle ConditionSwitch("organizeAZ", "mod_assets/music_player/A-ZOn.png", "True", "mod_assets/music_player/A-Z.png")
+                idle ConditionSwitch("organizeAZ", "mod_assets/music_player/A-ZOn.png", 
+                                    "True", "mod_assets/music_player/A-Z.png")
                 hover "mod_assets/music_player/A-ZHover.png"
                 action [ToggleVariable("organizeAZ", False, True), Function(resort)]
             imagebutton:
-                idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", "True", "mod_assets/music_player/priority.png")
+                idle ConditionSwitch("organizePriority", "mod_assets/music_player/priorityOn.png", 
+                                    "True", "mod_assets/music_player/priority.png")
                 hover "mod_assets/music_player/priorityHover.png"
                 action [ToggleVariable("organizePriority", False, True), Function(resort)]
             imagebutton:
-                idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", "True", "mod_assets/music_player/replay.png")
+                idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", 
+                                    "True", "mod_assets/music_player/replay.png")
                 hover "mod_assets/music_player/replayHover.png"
                 action [ToggleVariable("loopSong", False, True)]
             imagebutton:
-                idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", "True", "mod_assets/music_player/shuffle.png")
+                idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", 
+                                    "True", "mod_assets/music_player/shuffle.png")
                 hover "mod_assets/music_player/shuffleHover.png"
                 action [ToggleVariable("randomSong", False, True)]
             if not persistent.old_ui:
@@ -93,8 +106,10 @@ screen music_player:
                     hover "mod_assets/music_player/refreshHover.png"
                     action [Function(refresh_list)]
                 imagebutton:
-                    idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
-                    hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", "True", "mod_assets/music_player/NewUIHover.png")
+                    idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", 
+                                        "True", "mod_assets/music_player/NewUI.png")
+                    hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", 
+                                        "True", "mod_assets/music_player/NewUIHover.png")
                     action [ToggleField(persistent, "old_ui", False, True)]
 
         if persistent.old_ui:
@@ -106,8 +121,10 @@ screen music_player:
                     hover "mod_assets/music_player/refreshHover.png"
                     action [Function(refresh_list)]
                 imagebutton:
-                    idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", "True", "mod_assets/music_player/NewUI.png")
-                    hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", "True", "mod_assets/music_player/NewUIHover.png")
+                    idle ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUI.png", 
+                                        "True", "mod_assets/music_player/NewUI.png")
+                    hover ConditionSwitch("persistent.old_ui", "mod_assets/music_player/OldUIHover.png", 
+                                        "True", "mod_assets/music_player/NewUIHover.png")
                     action [ToggleField(persistent, "old_ui", False, True)]
 
         bar:
@@ -165,8 +182,12 @@ screen music_player:
                 style "volume_optionsO_hbox"
             else:
                 style "volume_optionsN_hbox"
-            idle ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", "mod_assets/music_player/volume.png", "True", "mod_assets/music_player/volumeOn.png")
-            hover ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", "mod_assets/music_player/volumeHover.png", "True", "mod_assets/music_player/volumeOnHover.png")
+            idle ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", 
+                                "mod_assets/music_player/volume.png", "True", 
+                                "mod_assets/music_player/volumeOn.png")
+            hover ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", 
+                                "mod_assets/music_player/volumeHover.png", "True", 
+                                "mod_assets/music_player/volumeOnHover.png")
             action [Function(mute_player)]
         
         if persistent.old_ui:
@@ -185,12 +206,14 @@ screen music_player:
         xoffset -10 yoffset -10
         style "main_menu_version"
     
-    if not renpy.config.developer:
+    if not config.developer:
         add "rpa_map_warning" xpos 0.23 ypos 0.9
 
     textbutton _("Return"):
         style "return_button"
-        action [Return(), Function(check_paused_state), If(prevTrack == False, true=None, false=Play('music', prevTrack, fadein=2.0))]
+        action [Return(), Function(check_paused_state), 
+                If(not prevTrack, None, 
+                Play('music', prevTrack, fadein=2.0))]
 
 transform cover_art_fade(x,y):
     anchor(0.5, 0.5)
