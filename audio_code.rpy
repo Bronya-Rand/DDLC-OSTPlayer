@@ -54,7 +54,7 @@ init python:
             self.author = author
             self.byteTime = byteTime
             self.description = description
-            if cover_art == False:
+            if not cover_art:
                 self.cover_art = "mod_assets/music_player/nocover.png"
             else:
                 self.cover_art = cover_art
@@ -249,7 +249,7 @@ init python:
         global pausedstate
         pausedstate = False
 
-        if current_soundtrack_pause is False:
+        if not current_soundtrack_pause:
             renpy.audio.music.play(current_soundtrack.path, channel = 'music_player', fadein=2.0)
         else:
             renpy.audio.music.play(current_soundtrack_pause, channel = 'music_player', fadein=2.0)
@@ -501,7 +501,7 @@ init python:
             prevTrack = False
 
     def check_paused_state():
-        if current_soundtrack == False or pausedstate:
+        if not current_soundtrack or pausedstate:
             return
         else:
             current_music_pause()
