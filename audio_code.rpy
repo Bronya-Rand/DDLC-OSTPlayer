@@ -2,7 +2,10 @@
 # Based off ost.py from Renpy-Universal-Player but Ren'Py 6 compatible
 
 init python:
-    import random, re, os, json
+    import random
+    import re
+    import os
+    import json
     import pygame_sdl2
     from tinytag import TinyTag
 
@@ -335,7 +338,7 @@ init python:
             old_volume = renpy.game.preferences.get_volume("music_player_mixer")
             renpy.game.preferences.set_volume("music_player_mixer", 0.0)
         else:
-            if old_volume is 0.0:
+            if old_volume == 0.0:
                 renpy.game.preferences.set_volume("music_room_mixer", 0.5)
             else:
                 renpy.game.preferences.set_volume("music_room_mixer", old_volume)
@@ -356,9 +359,11 @@ init python:
             if obj.unlocked:
                 soundtracks.append(obj)
         if organizeAZ:
-            soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.name)
+            soundtracks = sorted(soundtracks, key=lambda soundtracks: 
+                soundtracks.name)
         if organizePriority:
-            soundtracks = sorted(soundtracks, key=lambda soundtracks: soundtracks.priority)
+            soundtracks = sorted(soundtracks, key=lambda soundtracks: 
+                soundtracks.priority)
 
     def get_info(path, tags):   
         sec = tags.duration
