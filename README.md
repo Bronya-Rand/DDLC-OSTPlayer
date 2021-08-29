@@ -89,10 +89,6 @@ Additionally you may use `unlocked` to lock some songs from playing until the pl
 
 Manually define your song and give it a priority value. 0 is the highest priority you can make a song be while 1, 2, etc. will be prioritzed lower in the list. i.e. *0 > 1 > 2 > ...*
 
-## Why is there a file called `tinytag.py` in `python-packages`?
-
-This handles the metadata of songs sideloaded or those that have metadata in the game.
-
 ## Why is `Riffic-Bold` not included in DDLC OST-Player?
 
 Riffic-Bold is not included in DDLC OST-Player due to licensing issues with Fontspring. In order to install Riffic-Bold you will need to download it yourself as a _Desktop license_ and install it onto your project as listed above in **How do I install this?**
