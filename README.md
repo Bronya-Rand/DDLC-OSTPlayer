@@ -1,6 +1,6 @@
 # DDLC OST-Player
 
-A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.0**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.1**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
 <p align="center">
    <img src="assets/screenshot0001.png" alt="New UI" width=420x> 
@@ -59,16 +59,17 @@ This allows the user to play the soundtrack of mods outside the main story, side
 
 1. Drop all the contents in this ZIP file into the `game` folder.
    > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun/game` and drop the ZIP file contents in there.
-2. Open *options.rpy* and add this line under line `192`
+2. Open *options.rpy* and add the following lines under line `192`
    ```py
    build.classify("game/RPASongMetadata.json", "scripts all")
+   build.classify("game/python-packages/**", "mod")
    ```
 3. Copy this line to *screens.rpy* under `textbutton _("Load Game")` and restart DDLC.
    ```py
    textbutton _("Music Room") action [ShowMenu("music_player"), Function(get_music_channel_info), Stop('music', fadeout=2.0), Function(refresh_list)]
    ```
 3. **(Recommended but Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` in _Fonts_ to `game/mod_assets/music_player`
-   - Open *audio_player.rpy* and add a `#` to the front of lines `287`, `303` and `312`. Then remove the `#` in the front of lines `288`, `304` and `313`.
+   - Open *audio_player.rpy* and remove the `#` symbol in front of lines `292` and `299`.
 4. Put music in the `track` folder inside the `game` folder and try it out!
 
 ## Can I still define songs the old way?
