@@ -263,8 +263,6 @@ style music_optionsN_hbox is music_optionsO_hbox:
 
 style volume_optionsN_hbox is play_pause_buttonO_hbox:
     pos (1080, 504)
-    hover_sound gui.hover_sound
-    activate_sound gui.activate_sound
 
 style playerN_vbox is playerO_vbox: 
     xoffset 700
