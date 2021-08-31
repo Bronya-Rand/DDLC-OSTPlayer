@@ -237,10 +237,10 @@ init python:
         global current_soundtrack_pause, pausedstate
         pausedstate = True
 
-        if not renpy.music.is_playing(channel='music_room'):
+        if not renpy.audio.music.is_playing(channel='music_player'):
             return
         else:
-            soundtrack_position = music.get_pos(channel = 'music_room') + 1.6
+            soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') + 1.6
 
         if soundtrack_position is not None:
             current_soundtrack_pause = ("<from " + str(soundtrack_position) + ">" 
@@ -323,7 +323,7 @@ init python:
             pass
         else:
             while unique != 0:
-                a = random.randrange(0,len(soundtracks)-1)
+                a = random.randrange(0, len(soundtracks)-1)
                 if current_soundtrack != soundtracks[a]:
                     unique = 0
                     current_soundtrack = soundtracks[a]
@@ -339,9 +339,9 @@ init python:
             renpy.game.preferences.set_volume("music_player_mixer", 0.0)
         else:
             if old_volume == 0.0:
-                renpy.game.preferences.set_volume("music_room_mixer", 0.5)
+                renpy.game.preferences.set_volume("music_player_mixer", 0.5)
             else:
-                renpy.game.preferences.set_volume("music_room_mixer", old_volume)
+                renpy.game.preferences.set_volume("music_player_mixer", old_volume)
 
     def refresh_list():
         scan_song()
@@ -352,12 +352,14 @@ init python:
     def resort():
         global soundtracks
         soundtracks = [] 
+
         for obj in autoDefineList:
             if obj.unlocked:
                 soundtracks.append(obj)
         for obj in manualDefineList:
             if obj.unlocked:
                 soundtracks.append(obj)
+
         if organizeAZ:
             soundtracks = sorted(soundtracks, key=lambda soundtracks: 
                 soundtracks.name)
