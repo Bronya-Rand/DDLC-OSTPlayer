@@ -24,6 +24,7 @@ screen music_player:
         
         viewport id "vpo":
             mousewheel True
+            style_prefix ""
             style "music_player_viewport"
 
             has vbox
@@ -31,8 +32,8 @@ screen music_player:
             
             for st in soundtracks:
                 textbutton "[st.name]":
-                    style "l_list"
-                    text_style "music_navigation_button_text"
+                    style "music_player_list"
+                    text_style "music_player_list_button"
                     if current_soundtrack:
                         action [SensitiveIf(current_soundtrack.name != st.name 
                                 or current_soundtrack.author != st.author 
@@ -284,19 +285,18 @@ style music_player_volumeN_bar is music_player_volumeO_bar:
 style music_options_hboxB is play_pause_buttonO_hbox:
     pos (335, 610)
 
-# controls list formatting
-style l_list is default: 
-    left_padding 20
-    size 16
-    xfill True
+style music_player_list:
+    left_padding 5
+
+style music_player_list_button is navigation_button_text: 
+    #font "mod_assets/music_player/riffic-bold.ttf"
+    size gui.text_size
     hover_sound gui.hover_sound
     activate_sound gui.activate_sound
+    line_spacing 5
 
-style music_navigation_button_text is navigation_button_text:
-    font "gui/font/RifficFree-Bold.ttf"
+style music_player_music_text is navigation_button_text:
     #font "mod_assets/music_player/riffic-bold.ttf"
-
-style music_player_music_text is music_navigation_button_text:
     color "#000"
     outlines [(0, "#000", 0, 0)]
     hover_outlines []
@@ -314,22 +314,19 @@ style song_progress_text:
     size 25
     outlines[]
     color "#000"
-    text_align 0.0
-    xalign 0.28 yalign 0.78
+    xalign 0.28 
+    yalign 0.78
 
 style song_duration_text is song_progress_text:
-    text_align 1.0
-    xalign 0.79 yalign 0.78
+    xalign 0.79 
+    yalign 0.78
 
 style music_player_description_viewport:
-    xpos 640
-    ypos 520
-    xsize 580
+    pos (640, 520)
+    size (580, 200)
     xfill True
-    ysize 200
 
-style music_player_description_text is music_player_song_author_text:
-    size 24
+style music_player_description_text is music_player_song_author_text
 
 style music_player_viewport:
     pos(20, 20)
