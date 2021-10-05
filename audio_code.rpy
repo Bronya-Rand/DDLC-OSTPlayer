@@ -140,8 +140,14 @@ init python:
         if current_soundtrack.byteTime:
             time_duration = current_soundtrack.byteTime
         else:
-            time_duration = renpy.audio.music.get_duration(
-                                                        channel='music_player') or time_duration 
+            try:
+                tags = TinyTag.get(os.path.join(gamedir, current_soundtrack.path), image=False)
+                if tags.duration:
+                    time_duration = tags.duration
+                else:
+                    time_duration = renpy.audio.music.get_duration(channel='music_player') or time_duration 
+            except:
+                time_duration = renpy.audio.music.get_duration(channel='music_player') or time_duration 
 
         readableDuration = convert_time(time_duration) 
         d = renpy.text.text.Text(readableDuration, style=style_name)     
@@ -260,7 +266,7 @@ init python:
     def current_music_forward():
         global current_soundtrack_pause
 
-        if renpy.audio.music.get_pos(channel = 'music_player') is None:
+        if not renpy.audio.music.get_pos(channel = 'music_player'):
             soundtrack_position = time_position + 5
         else:
             soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') + 5
@@ -280,7 +286,7 @@ init python:
     def current_music_backward():
         global current_soundtrack_pause
 
-        if renpy.audio.music.get_pos(channel = 'music_player') is None:
+        if not renpy.audio.music.get_pos(channel = 'music_player'):
             soundtrack_position = time_position - 5
         else:
             soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') - 5
@@ -312,7 +318,7 @@ init python:
                         current_soundtrack = soundtracks[0]
                 break
 
-        if current_soundtrack != False:
+        if current_soundtrack:
             renpy.audio.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
 
     def random_song():
@@ -328,7 +334,7 @@ init python:
                     unique = 0
                     current_soundtrack = soundtracks[a]
 
-        if current_soundtrack != False:
+        if current_soundtrack:
             renpy.audio.music.play(current_soundtrack.path, channel='music_player', loop=loopSong)
 
     def mute_player():
@@ -388,7 +394,7 @@ init python:
 
                 if utfmatch: # addresses itunes cover descriptor fixes
                     image_data = re.sub(utfbytes, lines[2], image_data)
-
+           
             coverAlbum = re.sub(r"\[|\]|/|:|\?",'', tags.album) 
             
             with open(os.path.join(gamedir, 'track/covers', coverAlbum + cover_formats), 'wb') as f:
@@ -413,18 +419,18 @@ init python:
         for x in os.listdir(gamedir + '/track'):
             if x.endswith((file_types)) and "track/" + x not in exists:
                 path = "track/" + x
-                tags = TinyTag.get(gamedir + "/" + path, image=True) 
+                tags = TinyTag.get(os.path.join(gamedir, path), image=True) 
                 title, artist, sec, altAlbum, album, comment = get_info(path, tags)
                 def_song(title, artist, path, priorityScan, sec, altAlbum, album, 
                         comment, True)
 
     def def_song(title, artist, path, priority, sec, altAlbum, album, comment, 
                 unlocked=True):
-        if title is None:
+        if not title:
             title = str(path.replace("track/", "")).capitalize()
-        if artist is None or artist == "":
+        if not artist:
             artist = "Unknown Artist"
-        if altAlbum is None or altAlbum == "":
+        if not altAlbum:
             altAlbum = "mod_assets/music_player/nocover.png" 
         else:
             altAlbum = "track/covers/"+altAlbum
@@ -432,10 +438,10 @@ init python:
                 renpy.exports.image_size(altAlbum)
             except:
                 altAlbum = "mod_assets/music_player/nocover.png" 
-        if album is None or album == "": 
+        if not album: 
             description = "Non-Metadata Song"
         else:
-            if comment is None: 
+            if not comment: 
                 description = album
             else:
                 description = album + '\n' + comment 
@@ -469,7 +475,7 @@ init python:
                 "description": y.description,
                 "unlocked": y.unlocked,
             })
-        with open(gamedir + "/RPASongMetadata.json", "a") as f:
+        with open(os.path.join(gamedir, "RPASongMetadata.json"), "a") as f:
             json.dump(data, f)
 
     def rpa_load_mapping():
@@ -480,12 +486,9 @@ init python:
             data = json.load(f)
 
         for p in data:
-            title, artist, path, sec, altAlbum, description, unlocked = (p['title'], 
-                                                                        p['artist'], 
-                                                                        p["path"], 
-                                                                        p["sec"], 
-                                                                        p["altAlbum"], 
-                                                                        p["description"], 
+            title, artist, path, sec, altAlbum, description, unlocked = (p['title'], p['artist'], 
+                                                                        p["path"],  p["sec"], 
+                                                                        p["altAlbum"], p["description"], 
                                                                         p["unlocked"])
 
             p['class'] = soundtrack(
@@ -504,7 +507,7 @@ init python:
         global prevTrack
 
         prevTrack = renpy.audio.music.get_playing(channel='music')
-        if prevTrack is None:
+        if not prevTrack:
             prevTrack = False
 
     def check_paused_state():
@@ -513,13 +516,13 @@ init python:
         else:
             current_music_pause()
 
-    try: os.mkdir(gamedir + "/track")
+    try: os.mkdir(os.path.join(gamedir, "track"))
     except: pass
-    try: os.mkdir(gamedir + "/track/covers")
+    try: os.mkdir(os.path.join(gamedir, "track", "covers"))
     except: pass
 
-    for x in os.listdir(gamedir + '/track/covers'):
-        os.remove(gamedir + '/track/covers/' + x)
+    for x in os.listdir(os.path.join(gamedir, "track", "covers")):
+        os.remove(os.path.join(gamedir, "track", "covers", x))
 
     scan_song()
     if renpy.config.developer or renpy.config.developer == "auto":
