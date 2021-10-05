@@ -189,12 +189,19 @@ class TinyTag(object):
                 self._filehandler.seek(0)
             self._determine_duration(self._filehandler)
 
-    def _set_field(self, fieldname, bytestring, transfunc=None):
+    def _set_field(self, fieldname, bytestring, transfunc=None, id3key=None):
         """convienience function to set fields of the tinytag by name.
         the payload (bytestring) can be changed using the transfunc"""
         if getattr(self, fieldname):  # do not overwrite existing data
             return
-        value = bytestring if transfunc is None else transfunc(bytestring)
+
+        if not transfunc:
+            value = bytestring  
+        elif not id3key:
+            value = transfunc(bytestring) 
+        else: 
+            value = transfunc(bytestring, id3key)
+
         if DEBUG:
             stderr('Setting field "%s" to "%s"' % (fieldname, value))
         if fieldname == 'genre':
@@ -228,7 +235,7 @@ class TinyTag(object):
         raise NotImplementedError()
 
     def update(self, other):
-        # update the values of this tag with the values from another tag
+        # update the values of this tag with the values from another ftag
         for key in ['track', 'track_total', 'title', 'artist',
                     'album', 'albumartist', 'year', 'duration',
                     'genre', 'disc', 'disc_total', 'comment', 'composer']:
@@ -236,9 +243,16 @@ class TinyTag(object):
                 setattr(self, key, getattr(other, key))
 
     @staticmethod
-    def _unpad(s):
-        # strings in mp3 and asf *may* be terminated with a zero byte at the end
-        return s.replace('\x00', '')
+    def _unpad(s, id3key=None):
+        # if s is a artist string
+        if id3key in ("TPE1", "TPE2"):
+            return s.replace("\x00", "/")
+        # if s is a genre string
+        elif id3key == "TCON":
+            return s.replace('\x00', ', ')
+        else:
+            # strings in mp3 and asf *may* be terminated with a zero byte at the end
+            return s.replace('\x00', '')
 
 
 class MP4(TinyTag):
@@ -693,7 +707,7 @@ class ID3(TinyTag):
             content = fh.read(frame_size)
             fieldname = ID3.FRAME_ID_TO_FIELD.get(frame_id)
             if fieldname:
-                self._set_field(fieldname, content, self._decode_string)
+                self._set_field(fieldname, content, self._decode_string, frame_id)
             elif frame_id in self.IMAGE_FRAME_IDS and self._load_image:
                 # See section 4.14: http://id3.org/id3v2.4.0-frames
                 if frame_id == 'PIC':  # ID3 v2.2:
@@ -708,7 +722,7 @@ class ID3(TinyTag):
             return frame_size
         return 0
 
-    def _decode_string(self, bytestr):
+    def _decode_string(self, bytestr, id3key=None):
         try:  # it's not my fault, this is the spec.
             first_byte = bytestr[:1]
             if first_byte == b'\x00':  # ISO-8859-1
@@ -744,7 +758,7 @@ class ID3(TinyTag):
             if bytestr[:4] == b'eng\x00':
                 bytestr = bytestr[4:]  # remove language
             errors = 'ignore' if self._ignore_errors else 'strict'
-            return self._unpad(codecs.decode(bytestr, encoding, errors))
+            return self._unpad(codecs.decode(bytestr, encoding, errors), id3key)
         except UnicodeDecodeError:
             raise TinyTagException('Error decoding ID3 Tag!')
 
@@ -1045,6 +1059,9 @@ class Wma(TinyTag):
 
     def __decode_string(self, bytestring):
         return self._unpad(codecs.decode(bytestring, 'utf-16'))
+
+    def __decode_alt_string(self, bytestring):
+        return self._unpad(codecs.decode(bytestring, 'utf-8'))
 
     def __decode_ext_desc(self, value_type, value):
         """ decode ASF_EXTENDED_CONTENT_DESCRIPTION_OBJECT values"""
