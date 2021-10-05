@@ -1,6 +1,6 @@
 # DDLC OST-Player
 
-A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.1**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.2**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
 <p align="center">
    <img src="assets/screenshot0001.png" alt="New UI" width=420x> 
@@ -9,7 +9,7 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Ver
 
 **DISCLAIMER:** This is not afiliated or endorsed by Team Salvato or Nikso. The Scattered Stars <u>Logo</u> in `Wake Up Unchanged` is not free to use, but is only allowed in this build as a display to the soundtrack player. If you plan to use this, remove it in your final build.
 
-> All songs featured above are owned by the developer and are not included in DDLC OST-Player. (Shoo UMG, SME, Rooster Teeth and all other major labels.)
+> All songs featured above are owned by the developer and are not included in DDLC OST-Player. (Shoo UMG, SME, Rooster Teeth and all other music labels.)
 
 ## Credits
 
@@ -34,6 +34,7 @@ This allows the user to play the soundtrack of mods outside the main story, side
 ## What does this version improve on?
 
 1. Ability to play MP3, OGG, WAV and OPUS files with metadata!
+    > Some players will export music files differently than normal. Make sure your tracks are exported properly using your music player or Audacity.
 2. Improved music player aesthetic.
 3. Dynamic title and font size changes (sort of) and cover art scaling.
 4. Sideload songs from your playlist to be played with the mod's tracks.
