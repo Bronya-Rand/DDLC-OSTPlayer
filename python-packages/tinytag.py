@@ -174,6 +174,16 @@ class TinyTag(object):
             tag.load(tags=tags, duration=duration, image=image)
             return tag
 
+    @classmethod
+    def get_renpy(cls, filename, tags=True, duration=True, image=False, ignore_errors=False):
+        import renpy
+        full_path = os.path.join(renpy.config.gamedir, filename)
+        with renpy.exports.file(filename) as af:
+            parser_class = cls.get_parser_class(full_path, af)
+            tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
+            tag.load(tags=tags, duration=duration, image=image)
+            return tag
+
     def __str__(self):
         return json.dumps(OrderedDict(sorted(self.as_dict().items())))
 
@@ -862,6 +872,7 @@ class Ogg(TinyTag):
             self._max_samplenum = max(self._max_samplenum, pos)
             if oggs != b'OggS' or version != 0:
                 raise TinyTagException('Not a valid ogg file!')
+            self.count += 1
             segsizes = struct.unpack('B'*segments, fh.read(segments))
             total = 0
             for segsize in segsizes:  # read all segments
