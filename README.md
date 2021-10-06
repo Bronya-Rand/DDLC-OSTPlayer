@@ -17,13 +17,14 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Ver
 - Sam Kujo#9403 - Original Design and Beta Tester
 - Staryxz#3613 - Original Beta Tester
 - PabloLuaxerc#1719 - Artist of `Wake Up Unchanged`
-- Tom Rothamel - Ren'Py SDK Style Code and Feedback
+- Tom Rothamel - Ren'Py SDK Style Code, Ren'Py File Code and Feedback
+- Tom Wallroth - Tinytag Code
 - RyzekNoavek#0624 - Adjustable Play Bar Code
-- khaase (Pixabay) - Refresh Icon
-- eugenialcala (Pixabay) - Replay Icon
-- raphaelsilva (Pixabay) - Shuffle Icon
-- Josy_Dom_Alexis (Pixabay) - Volume Icon
-- Google - Noto Sans SC Font (Author/Description Tag)
+- khaase (Pixabay) - Refresh Icon (Prior to Version 2.0)
+- eugenialcala (Pixabay) - Replay Icon (Prior to Version 2.0)
+- raphaelsilva (Pixabay) - Shuffle Icon (Prior to Version 2.0)
+- Josy_Dom_Alexis (Pixabay) - Volume Icon (Prior to Version 2.0)
+- Google - Noto Sans SC Font (Author/Description Tag) and Icons (Version 2.0+)
 - Ren'Py Discord - Feedback on Ren'Py Universal Player Feats Now In DDLC OST-Player
 - Weiss Schnee - Support (Weiss :D)
 
@@ -58,12 +59,12 @@ This allows the user to play the soundtrack of mods outside the main story, side
 
 > This assumes you already have a copy of DDLC with the mod template installed over it.
 
-1. Drop all the contents in this ZIP file into the `game` folder.
-   > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun/game` and drop the ZIP file contents in there.
+1. Drop all the contents in this ZIP file into the base folder of DDLC (where `DDLC.exe`/`DDLC.sh` is).
+   > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun` and drop the ZIP file contents in there.
 2. Open *options.rpy* and add the following lines under line `192`
    ```py
    build.classify("game/RPASongMetadata.json", "scripts all")
-   build.classify("game/python-packages/**", "mod")
+   build.classify("game/python-packages/**", "mod all")
    ```
 3. Copy this line to *screens.rpy* under `textbutton _("Load Game")` and restart DDLC.
    ```py
