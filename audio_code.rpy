@@ -10,7 +10,7 @@ init python:
     from tinytag import TinyTag
 
     # Creation of Music Room and Code Setup
-    ostVersion = 2.1
+    ostVersion = 2.2
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
     if renpy.windows:
         gamedir = renpy.config.gamedir.replace("\\", "/")
@@ -55,7 +55,10 @@ init python:
             self.path = path
             self.priority = priority
             self.author = author
-            self.byteTime = byteTime
+            if byteTime:
+                self.byteTime = byteTime
+            else:
+                self.byteTime = get_duration(path)
             self.description = description
             if not cover_art:
                 self.cover_art = "mod_assets/music_player/nocover.png"
@@ -133,21 +136,31 @@ init python:
         readableTime = convert_time(time_position)
         d = renpy.text.text.Text(readableTime, style=style_name) 
         return d, 0.20
+    
+    def get_duration(songPath=None):
+        if current_soundtrack and current_soundtrack.byteTime and not songPath:
+            return current_soundtrack.byteTime
+        else:
+            try:
+                if songPath:
+                    pathToSong = songPath
+                else:
+                    pathToSong = current_soundtrack.path
+
+                tags = TinyTag.get_renpy(pathToSong, image=False)
+                if tags.duration:
+                    return tags.duration
+                else:
+                    if not songPath:
+                        return renpy.audio.music.get_duration(channel='music_player') or time_duration 
+            except:
+                if not songPath:
+                    return renpy.audio.music.get_duration(channel='music_player') or time_duration 
 
     def music_dur(style_name, st, at):
         global time_duration
-            
-        if current_soundtrack.byteTime:
-            time_duration = current_soundtrack.byteTime
-        else:
-            try:
-                tags = TinyTag.get(os.path.join(gamedir, current_soundtrack.path), image=False)
-                if tags.duration:
-                    time_duration = tags.duration
-                else:
-                    time_duration = renpy.audio.music.get_duration(channel='music_player') or time_duration 
-            except:
-                time_duration = renpy.audio.music.get_duration(channel='music_player') or time_duration 
+
+        time_duration = get_duration()
 
         readableDuration = convert_time(time_duration) 
         d = renpy.text.text.Text(readableDuration, style=style_name)     
@@ -351,7 +364,7 @@ init python:
 
     def refresh_list():
         scan_song()
-        if renpy.config.developer or renpy.config.developer == "auto":
+        if renpy.config.developer:
             rpa_mapping()
         resort()
 
@@ -419,7 +432,7 @@ init python:
         for x in os.listdir(gamedir + '/track'):
             if x.endswith((file_types)) and "track/" + x not in exists:
                 path = "track/" + x
-                tags = TinyTag.get(os.path.join(gamedir, path), image=True) 
+                tags = TinyTag.get_renpy(path, image=True) 
                 title, artist, sec, altAlbum, album, comment = get_info(path, tags)
                 def_song(title, artist, path, priorityScan, sec, altAlbum, album, 
                         comment, True)
@@ -461,6 +474,9 @@ init python:
         autoDefineList.append(class_name)
 
     def rpa_mapping():
+        if not renpy.config.developer:
+            return
+
         data = []
         try: os.remove(os.path.join(gamedir, "RPASongMetadata.json"))
         except: pass
@@ -470,7 +486,7 @@ init python:
                 "title": y.name,
                 "artist": y.author,
                 "path": y.path,
-                "sec": y.byteTime,
+                "sec": get_duration(y.path),
                 "altAlbum": y.cover_art,
                 "description": y.description,
                 "unlocked": y.unlocked,
@@ -479,6 +495,9 @@ init python:
             json.dump(data, f)
 
     def rpa_load_mapping():
+        if renpy.config.developer:
+            return
+            
         try: renpy.exports.file("RPASongMetadata.json")
         except: return
 
@@ -519,13 +538,13 @@ init python:
     try: os.mkdir(os.path.join(gamedir, "track"))
     except: pass
     try: os.mkdir(os.path.join(gamedir, "track", "covers"))
-    except: pass
+    except`: pass
 
     for x in os.listdir(os.path.join(gamedir, "track", "covers")):
         os.remove(os.path.join(gamedir, "track", "covers", x))
 
     scan_song()
-    if renpy.config.developer or renpy.config.developer == "auto":
+    if renpy.config.developer:
         rpa_mapping()
     else:
         rpa_load_mapping()
