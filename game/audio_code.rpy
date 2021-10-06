@@ -391,7 +391,7 @@ init python:
         try:
             image_data = tags.get_image()
 
-            with open(os.path.join(gamedir, "python-packages/binaries.txt"), "rb") as a:
+            with renpy.exports.file("python-packages/binaries.txt") as a:
                 lines = a.readlines()
 
             jpgbytes = bytes("\\xff\\xd8\\xff")
@@ -538,7 +538,7 @@ init python:
     try: os.mkdir(os.path.join(gamedir, "track"))
     except: pass
     try: os.mkdir(os.path.join(gamedir, "track", "covers"))
-    except`: pass
+    except: pass
 
     for x in os.listdir(os.path.join(gamedir, "track", "covers")):
         os.remove(os.path.join(gamedir, "track", "covers", x))
