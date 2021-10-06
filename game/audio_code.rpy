@@ -5,9 +5,9 @@ init python:
     import random
     import re
     import os
-    import json
     import pygame_sdl2
     from tinytag import TinyTag
+    from minimalRPATool import RenPyArchive
 
     # Creation of Music Room and Code Setup
     ostVersion = 2.2
@@ -224,13 +224,6 @@ init python:
                                                 action=current_music_play)
         return d, 0.20
 
-    def rpa_mapping_detection(style_name, st, at):
-        try: 
-            renpy.exports.file("RPASongMetadata.json")
-            return renpy.text.text.Text("", size=23), 0.0
-        except:
-            return renpy.text.text.Text("{b}Warning:{/b} The RPA metadata file hasn't been generated. Songs in the {i}track{/i} folder that are archived into a\nRPA won't work without it. Set {i}config.developer{/i} to {i}True{/i} in order to generate this file.", style=style_name, size=20), 0.0
-
     def convert_time(x):
         hour = ""
 
@@ -364,8 +357,6 @@ init python:
 
     def refresh_list():
         scan_song()
-        if renpy.config.developer:
-            rpa_mapping()
         resort()
 
     def resort():
@@ -436,6 +427,19 @@ init python:
                 title, artist, sec, altAlbum, album, comment = get_info(path, tags)
                 def_song(title, artist, path, priorityScan, sec, altAlbum, album, 
                         comment, True)
+        
+        rpa_list = [x + ".rpa" for x in config.archives]
+        rpa_file_list = []
+        for archive in rpa_list:
+            rpa_file = RenPyArchive(os.path.join(gamedir, archive), padlength=0, key=0xDEADBEEF, version=3)
+            rpa_file_list += [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
+
+        for x in rpa_file_list:
+            if x not in exists:
+                tags = TinyTag.get_renpy(x, image=True) 
+                title, artist, sec, altAlbum, album, comment = get_info(x, tags)
+                def_song(title, artist, x, priorityScan, sec, altAlbum, album, 
+                        comment, True)
 
     def def_song(title, artist, path, priority, sec, altAlbum, album, comment, 
                 unlocked=True):
@@ -473,55 +477,6 @@ init python:
         )
         autoDefineList.append(class_name)
 
-    def rpa_mapping():
-        if not renpy.config.developer:
-            return
-
-        data = []
-        try: os.remove(os.path.join(gamedir, "RPASongMetadata.json"))
-        except: pass
-        for y in autoDefineList:
-            data.append ({
-                "class": re.sub(r"-|'| ", "_", y.name),
-                "title": y.name,
-                "artist": y.author,
-                "path": y.path,
-                "sec": get_duration(y.path),
-                "altAlbum": y.cover_art,
-                "description": y.description,
-                "unlocked": y.unlocked,
-            })
-        with open(os.path.join(gamedir, "RPASongMetadata.json"), "a") as f:
-            json.dump(data, f)
-
-    def rpa_load_mapping():
-        if renpy.config.developer:
-            return
-            
-        try: renpy.exports.file("RPASongMetadata.json")
-        except: return
-
-        with renpy.exports.file("RPASongMetadata.json") as f:
-            data = json.load(f)
-
-        for p in data:
-            title, artist, path, sec, altAlbum, description, unlocked = (p['title'], p['artist'], 
-                                                                        p["path"],  p["sec"], 
-                                                                        p["altAlbum"], p["description"], 
-                                                                        p["unlocked"])
-
-            p['class'] = soundtrack(
-                name = title,
-                author = artist,
-                path = path,
-                byteTime = sec,
-                priority = priorityScan,
-                description = description,
-                cover_art = altAlbum,
-                unlocked = unlocked
-            )
-            autoDefineList.append(p['class'])
-
     def get_music_channel_info():
         global prevTrack
 
@@ -544,8 +499,4 @@ init python:
         os.remove(os.path.join(gamedir, "track", "covers", x))
 
     scan_song()
-    if renpy.config.developer:
-        rpa_mapping()
-    else:
-        rpa_load_mapping()
     resort()

@@ -8,7 +8,6 @@ image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)("music_play
 image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)("music_player_song_author_text")) 
 image coverArt = DynamicDisplayable(refresh_cover_data) 
 image songDescription = DynamicDisplayable(renpy.curry(dynamic_description_text)("music_player_song_author_text")) 
-image rpa_map_warning = DynamicDisplayable(renpy.curry(rpa_mapping_detection)("music_player_song_author_text"))
 image playPauseButton = DynamicDisplayable(auto_play_pause_button)
 
 screen music_player:
@@ -206,9 +205,6 @@ screen music_player:
         xalign 1.0 yalign 1.0
         xoffset -10 yoffset -10
         style "main_menu_version"
-    
-    if not config.developer:
-        add "rpa_map_warning" xpos 0.23 ypos 0.9
 
     textbutton _("Return"):
         style "return_button"
