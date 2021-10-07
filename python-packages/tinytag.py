@@ -176,13 +176,20 @@ class TinyTag(object):
 
     @classmethod
     def get_renpy(cls, filename, tags=True, duration=True, image=False, ignore_errors=False):
+        import ost_backend
         import renpy
-        full_path = os.path.join(renpy.config.gamedir, filename)
-        with renpy.exports.file(filename) as af:
-            parser_class = cls.get_parser_class(full_path, af)
-            tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
-            tag.load(tags=tags, duration=duration, image=image)
-            return tag
+
+        ## TODO: Make path obtain/data
+        af = ost_backend.file(filename)
+        if renpy.android:
+            full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-track/x-" + filename
+        else:
+            full_path = os.path.join(renpy.config.gamedir, filename)
+
+        parser_class = cls.get_parser_class(full_path, af)
+        tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
+        tag.load(tags=tags, duration=duration, image=image)
+        return tag
 
     def __str__(self):
         return json.dumps(OrderedDict(sorted(self.as_dict().items())))
@@ -575,7 +582,7 @@ class ID3(TinyTag):
         fh.seek(self._bytepos_after_id3v2)
         while True:
             # reading through garbage until 11 '1' sync-bits are found
-            b = fh.peek(4)
+            b = next(fh)
             if len(b) < 4:
                 break  # EOF
             sync, conf, bitrate_freq, rest = struct.unpack('BBBB', b[0:4])
