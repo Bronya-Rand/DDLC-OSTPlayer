@@ -147,9 +147,6 @@ init python:
                 else:
                     pathToSong = current_soundtrack.path
 
-                if renpy.android:
-                    pathToSong = pathToSong.replace("track/", "")
-
                 tags = TinyTag.get_renpy(pathToSong, image=False)
                 if tags.duration:
                     return tags.duration
@@ -425,10 +422,7 @@ init python:
         
         for x in os.listdir(gamedir + '/track'):
             if x.endswith((file_types)) and "track/" + x not in exists:
-                if renpy.android:
-                    path = x
-                else:
-                    path = "track/" + x
+                path = "track/" + x
                 tags = TinyTag.get_renpy(path, image=True) 
                 title, artist, sec, altAlbum, album, comment = get_info(path, tags)
                 def_song(title, artist, path, priorityScan, sec, altAlbum, album, 
@@ -437,10 +431,11 @@ init python:
         rpa_list = [x + ".rpa" for x in config.archives]
         rpa_file_list = []
         if renpy.android:
-            rpa_file_list += [x.replace("track/", "") for x in renpy.list_files() if "track/" in x and x.endswith((file_types))]
-        for archive in rpa_list:
-            rpa_file = RenPyArchive(os.path.join(gamedir, archive), padlength=0, key=0xDEADBEEF, version=3)
-            rpa_file_list += [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
+            rpa_file_list = [x for x in renpy.list_files() if "track/" in x and x.endswith((file_types))]
+        else:
+            for archive in rpa_list:
+                rpa_file = RenPyArchive(os.path.join(gamedir, archive), padlength=0, key=0xDEADBEEF, version=3)
+                rpa_file_list = [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
 
         for x in rpa_file_list:
             if x not in exists:

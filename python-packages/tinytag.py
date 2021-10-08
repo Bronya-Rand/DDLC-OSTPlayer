@@ -180,16 +180,17 @@ class TinyTag(object):
         import renpy
 
         ## TODO: Make path obtain/data
-        af = ost_backend.file(filename)
         if renpy.android:
-            full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-track/x-" + filename
+            with ost_backend.file(filename) as af:
+                full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-track/x-" + filename.replace("track/", "")
         else:
-            full_path = os.path.join(renpy.config.gamedir, filename)
+            full_path = os.path.join(renpy.config.gamedir, filename).replace("\\", "/")
 
-        parser_class = cls.get_parser_class(full_path, af)
-        tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
-        tag.load(tags=tags, duration=duration, image=image)
-        return tag
+        with ost_backend.file(filename) as af:
+            parser_class = cls.get_parser_class(full_path, af)
+            tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
+            tag.load(tags=tags, duration=duration, image=image)
+            return tag
 
     def __str__(self):
         return json.dumps(OrderedDict(sorted(self.as_dict().items())))
