@@ -148,6 +148,7 @@ init python:
                     pathToSong = current_soundtrack.path
 
                 tags = TinyTag.get_renpy(pathToSong, image=False)
+                
                 if tags.duration:
                     return tags.duration
                 else:
