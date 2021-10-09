@@ -544,6 +544,7 @@ init python:
 
     def ost_start():
         get_music_channel_info()
+        resort()
 
     def ost_quit():
         check_paused_state()
@@ -563,4 +564,3 @@ init python:
         os.remove(os.path.join(gamedir, "track", "covers", x))
 
     scan_song()
-    resort()
