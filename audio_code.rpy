@@ -435,7 +435,7 @@ init python:
         else:
             for archive in rpa_list:
                 rpa_file = RenPyArchive(os.path.join(gamedir, archive), padlength=0, key=0xDEADBEEF, version=3)
-                rpa_file_list = [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
+                rpa_file_list += [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
 
         for x in rpa_file_list:
             if x not in exists:
