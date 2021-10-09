@@ -180,8 +180,16 @@ class TinyTag(object):
     def get_renpy(cls, filename, tags=True, duration=True, image=False, ignore_errors=False):
         ## TODO: Make path obtain/data
         if renpy.android:
+            split_filename = filename.split("/")
+            new_filename = ""
+            for x in range(len(split_filename)):
+                if x != len(split_filename) - 1:
+                    new_filename += split_filename + "/x-"
+                else:
+                    new_filename += split_filename
+
             with ost_backend.file(filename) as af:
-                full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-track/x-" + filename.replace("track/", "")
+                full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-" + new_filename
         else:
             full_path = os.path.join(renpy.config.gamedir, filename).replace("\\", "/")
 
@@ -261,21 +269,23 @@ class TinyTag(object):
 
     @staticmethod
     def _unpad(s, id3key=None):
+        # if end of line has \x00 pattern, axe it
+        try:
+            if s[-1] == "\x00":
+                t = s.replace(s[-1], "")
+            else:
+                t = s
+        except IndexError:
+            t = s
         # if s is a artist string
         if id3key in ("TPE1", "TPE2"):
-            if s[-1] == "\x00":
-                s = s.replace(s[-1], "")
-            return s.replace("\x00", "/")
+            return t.replace("\x00", "/")
         # if s is a genre string
         elif id3key == "TCON":
-            if s[-1] == "\x00":
-                s = s.replace(s[-1], "")
-            return s.replace('\x00', ', ')
+            return t.replace("\x00", "/")
         else:
-            if s[-1] == "\x00":
-                s = s.replace(s[-1], "")
             # strings in mp3 and asf *may* be terminated with a zero byte at the end
-            return s.replace('\x00', '')
+            return t.replace('\x00', '')
 
 
 class MP4(TinyTag):
@@ -891,7 +901,6 @@ class Ogg(TinyTag):
             self._max_samplenum = max(self._max_samplenum, pos)
             if oggs != b'OggS' or version != 0:
                 raise TinyTagException('Not a valid ogg file!')
-            self.count += 1
             segsizes = struct.unpack('B'*segments, fh.read(segments))
             total = 0
             for segsize in segsizes:  # read all segments
