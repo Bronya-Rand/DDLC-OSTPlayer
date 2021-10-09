@@ -201,24 +201,32 @@ def load_from_archive(name):
 
     return None
 
-renpy.loader.file_open_callbacks.remove(renpy.loader.load_from_archive)
-renpy.loader.file_open_callbacks.append(load_from_archive)
+if renpy.version_tuple > (6, 99, 12, 4, 2187):
+    renpy.loader.file_open_callbacks.remove(renpy.loader.load_from_archive)
+    renpy.loader.file_open_callbacks.append(load_from_archive)
 
 def load(name, tl=True):
 
-    if renpy.display.predict.predicting: # @UndefinedVariable
-        if threading.current_thread().name == "MainThread":
-            if not (renpy.emscripten or os.environ.get('RENPY_SIMULATE_DOWNLOAD', False)):
-                raise Exception("Refusing to open {} while predicting.".format(name))
-
+    if renpy.version_tuple > (6, 99, 12, 4, 2187):
+        gp = renpy.loader.get_prefixes(tl)
+        if renpy.display.predict.predicting: # @UndefinedVariable
+            if threading.current_thread().name == "MainThread":
+                if not (renpy.emscripten or os.environ.get('RENPY_SIMULATE_DOWNLOAD', False)):
+                    raise Exception("Refusing to open {} while predicting.".format(name))
+    else:
+        gp = renpy.loader.get_prefixes()
+        
     if renpy.config.reject_backslash and "\\" in name:
         raise Exception("Backslash in filename, use '/' instead: %r" % name)
 
     name = re.sub(r'/+', '/', name).lstrip('/')
 
-    for p in renpy.loader.get_prefixes(tl):
+    for p in gp:
         rv = renpy.loader.load_core(p + name)
         if rv is not None:
-            return rv
+            if renpy.version_tuple > (6, 99, 12, 4, 2187):
+                return rv
+            else:
+                return io.open(rv.name, "rb")
 
     raise IOError("Couldn't find file '%s'." % name)
