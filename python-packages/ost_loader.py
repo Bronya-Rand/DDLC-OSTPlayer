@@ -2,6 +2,7 @@
 import os
 import renpy
 import re
+import io
 
 class AltSubFile(object):
 
@@ -161,6 +162,47 @@ class AltSubFile(object):
 
     def write(self, s):
         raise Exception("Write not supported by SubFile/AltSubFile")
+
+def load_from_archive(name):
+    """
+    Returns an open python file object of the given type from an archive file.
+    """
+
+    for prefix, index in renpy.loader.archives:
+        if not name in index:
+            continue
+
+        afn = renpy.loader.transfn(prefix)
+
+        data = [ ]
+
+        # Direct path.
+        if len(index[name]) == 1:
+
+            t = index[name][0]
+            if len(t) == 2:
+                offset, dlen = t
+                start = b''
+            else:
+                offset, dlen, start = t
+
+            rv = AltSubFile(afn, offset, dlen, start)
+
+        # Compatibility path.
+        else:
+            with open(afn, "rb") as f:
+                for offset, dlen in index[name]:
+                    f.seek(offset)
+                    data.append(f.read(dlen))
+
+                rv = io.BytesIO(b''.join(data))
+
+        return rv
+
+    return None
+
+renpy.loader.file_open_callbacks.remove(renpy.loader.load_from_archive)
+renpy.loader.file_open_callbacks.append(load_from_archive)
 
 def load(name, tl=True):
 
