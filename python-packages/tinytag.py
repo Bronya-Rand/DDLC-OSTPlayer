@@ -192,7 +192,7 @@ class TinyTag(object):
                 full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-" + new_filename
         else:
             full_path = os.path.join(renpy.config.gamedir, filename).replace("\\", "/")
-
+            
         with ost_backend.file(filename) as af:
             parser_class = cls.get_parser_class(full_path, af)
             tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
