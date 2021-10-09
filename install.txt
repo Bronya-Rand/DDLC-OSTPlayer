@@ -1,3 +1,4 @@
+
 Installation:
 
 This assumes you already have a copy of DDLC with the mod template installed over it.
@@ -12,11 +13,10 @@ This assumes you already have a copy of DDLC with the mod template installed ove
 2. Open screens.rpy in a text editor and add this line under lines 443-478.
   a. Replace the original button from Nikso's Audio Player with this one.
 
-    textbutton _("Music Room") action [ShowMenu("music_player"), Function(get_music_channel_info), Stop('music', fadeout=2.0), Function(refresh_list)]
+    textbutton _("Music Room") action [ShowMenu("music_player"), Function(ost_start), Stop('music', fadeout=2.0)]
   
 3. Open options.rpy and add these lines under line 192.
 
-    build.classify("game/RPASongMetadata.json", "scripts all")
     build.classify("game/python-packages/**", "mod all")
 
 4. (Recommended but Optional) Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
@@ -32,8 +32,8 @@ Credits!
 - Nikso - Original Developer
 - Sam Kujo#9403 - Original Design and Beta Tester
 - Staryxz#3613 - Original Beta Tester
-- PabloLuaxerc#1719 - Artist of 'Wake Up Unchanged'
-- Tom Rothamel - Ren'Py SDK Style Code, Ren'Py File Code and Feedback
+- PabloLuaxerc#1719 - Artist of "Wake Up Unchanged"
+- Tom Rothamel - Ren'Py SDK Style Code, Ren'Py File/APK Code and Feedback
 - Tom Wallroth - Tinytag Code
 - RyzekNoavek#0624 - Adjustable Play Bar Code
 - khaase (Pixabay) - Refresh Icon (Prior to Version 2.0)

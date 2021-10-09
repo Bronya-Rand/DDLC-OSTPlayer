@@ -208,9 +208,8 @@ screen music_player:
 
     textbutton _("Return"):
         style "return_button"
-        action [Return(), Function(check_paused_state), 
-                If(not prevTrack, None, 
-                Play('music', prevTrack, fadein=2.0))]
+        action [Return(), Function(ost_quit), If(not prevTrack, None, Play('music', 
+            prevTrack, fadein=2.0))]
 
 transform cover_art_fade(x,y):
     anchor(0.5, 0.5)
