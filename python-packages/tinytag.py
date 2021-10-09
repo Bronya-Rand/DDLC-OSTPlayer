@@ -42,6 +42,8 @@ import io
 import sys
 from io import BytesIO
 import re
+import renpy
+import ost_backend
 
 DEBUG = os.environ.get('DEBUG', False)  # some of the parsers can print debug info
 
@@ -176,9 +178,6 @@ class TinyTag(object):
 
     @classmethod
     def get_renpy(cls, filename, tags=True, duration=True, image=False, ignore_errors=False):
-        import ost_backend
-        import renpy
-
         ## TODO: Make path obtain/data
         if renpy.android:
             with ost_backend.file(filename) as af:
@@ -264,11 +263,17 @@ class TinyTag(object):
     def _unpad(s, id3key=None):
         # if s is a artist string
         if id3key in ("TPE1", "TPE2"):
+            if s[-1] == "\x00":
+                s = s.replace(s[-1], "")
             return s.replace("\x00", "/")
         # if s is a genre string
         elif id3key == "TCON":
+            if s[-1] == "\x00":
+                s = s.replace(s[-1], "")
             return s.replace('\x00', ', ')
         else:
+            if s[-1] == "\x00":
+                s = s.replace(s[-1], "")
             # strings in mp3 and asf *may* be terminated with a zero byte at the end
             return s.replace('\x00', '')
 
@@ -583,7 +588,10 @@ class ID3(TinyTag):
         fh.seek(self._bytepos_after_id3v2)
         while True:
             # reading through garbage until 11 '1' sync-bits are found
-            b = next(fh)
+            if renpy.android:
+                b = next(fh)
+            else:
+                b = fh.peek(4)
             if len(b) < 4:
                 break  # EOF
             sync, conf, bitrate_freq, rest = struct.unpack('BBBB', b[0:4])
@@ -799,7 +807,10 @@ class Ogg(TinyTag):
         if self.filesize > max_page_size:
             fh.seek(-max_page_size, 2)  # go to last possible page position
         while True:
-            b = fh.peek(4)
+            if renpy.android:
+                b = next(fh)
+            else:
+                b = fh.peek(4)
             if len(b) == 0:
                 return  # EOF
             if b[:4] == b'OggS':  # look for an ogg header
