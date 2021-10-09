@@ -184,9 +184,9 @@ class TinyTag(object):
             new_filename = ""
             for x in range(len(split_filename)):
                 if x != len(split_filename) - 1:
-                    new_filename += split_filename + "/x-"
+                    new_filename += split_filename[x] + "/x-"
                 else:
-                    new_filename += split_filename
+                    new_filename += split_filename[x]
 
             with ost_backend.file(filename) as af:
                 full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-" + new_filename
