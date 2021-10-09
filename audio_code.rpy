@@ -13,6 +13,7 @@ init python:
     # Creation of Music Room and Code Setup
     ostVersion = 2.2
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
+
     if renpy.windows:
         gamedir = renpy.config.gamedir.replace("\\", "/")
     elif renpy.android:
@@ -21,6 +22,10 @@ init python:
         gamedir = os.path.join(os.environ["ANDROID_PUBLIC"], "game")
     else:
         gamedir = renpy.config.gamedir
+
+    logdir = os.path.join(config.basedir, "ost_log.txt")
+    if os.path.exists(logdir):
+        os.remove(logdir)
 
     # Lists for holding media types
     autoDefineList = []
@@ -369,11 +374,11 @@ init python:
         for obj in autoDefineList:
             if obj.unlocked:
                 soundtracks.append(obj)
-            logging.info("Added auto-defined songs to the music list.")
+        logging.info("Added auto-defined songs to the music list.")
         for obj in manualDefineList:
             if obj.unlocked:
                 soundtracks.append(obj)
-            logging.info("Added manual-defined songs to the music list.")
+        logging.info("Added manual-defined songs to the music list.")
 
         if organizeAZ:
             soundtracks = sorted(soundtracks, key=lambda soundtracks: 
@@ -530,8 +535,7 @@ init python:
             current_music_pause()
 
     def ost_log_start():
-        logging.basicConfig(filename=os.path.join(config.basedir, "ost_log.txt"), 
-            level=logging.DEBUG)
+        logging.basicConfig(filename=logdir, level=logging.DEBUG)
         logging.info("Started logging this OST-Player session for errors.")
 
     def ost_log_stop():
@@ -539,9 +543,7 @@ init python:
         logging.shutdown()
 
     def ost_start():
-        ost_log_start()
         get_music_channel_info()
-        refresh_list()
 
     def ost_quit():
         check_paused_state()
