@@ -178,26 +178,29 @@ class TinyTag(object):
 
     @classmethod
     def get_renpy(cls, filename, tags=True, duration=True, image=False, ignore_errors=False):
+        import ost_apk
         ## TODO: Make path obtain/data
         if renpy.android:
+            mod_apk = ost_apk.AltAPK(prefix="assets/x-game")
             split_filename = filename.split("/")
             new_filename = ""
-            for x in range(len(split_filename)):
-                if x != len(split_filename) - 1:
-                    new_filename += split_filename[x] + "/x-"
-                else:
-                    new_filename += split_filename[x]
+            for x in split_filename:
+                new_filename += "/x-" + x 
 
-            with ost_backend.file(filename) as af:
-                full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game/x-" + new_filename
+            with mod_apk.open(new_filename) as af:
+                full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game" + new_filename
+                parser_class = cls.get_parser_class(full_path, af)
+                tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
+                tag.load(tags=tags, duration=duration, image=image)
         else:
             full_path = os.path.join(renpy.config.gamedir, filename).replace("\\", "/")
             
-        with ost_backend.file(filename) as af:
-            parser_class = cls.get_parser_class(full_path, af)
-            tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
-            tag.load(tags=tags, duration=duration, image=image)
-            return tag
+            with ost_backend.file(filename) as af:
+                parser_class = cls.get_parser_class(full_path, af)
+                tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
+                tag.load(tags=tags, duration=duration, image=image)
+                
+        return tag
 
     def __str__(self):
         return json.dumps(OrderedDict(sorted(self.as_dict().items())))
@@ -598,10 +601,7 @@ class ID3(TinyTag):
         fh.seek(self._bytepos_after_id3v2)
         while True:
             # reading through garbage until 11 '1' sync-bits are found
-            if renpy.android:
-                b = next(fh)
-            else:
-                b = fh.peek(4)
+            b = fh.peek(4)
             if len(b) < 4:
                 break  # EOF
             sync, conf, bitrate_freq, rest = struct.unpack('BBBB', b[0:4])
@@ -817,10 +817,7 @@ class Ogg(TinyTag):
         if self.filesize > max_page_size:
             fh.seek(-max_page_size, 2)  # go to last possible page position
         while True:
-            if renpy.android:
-                b = next(fh)
-            else:
-                b = fh.peek(4)
+            b = fh.peek(4)
             if len(b) == 0:
                 return  # EOF
             if b[:4] == b'OggS':  # look for an ogg header
