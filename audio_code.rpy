@@ -4,6 +4,7 @@
 init python:
     import random
     import re
+    import io
     import os
     import pygame_sdl2
     import logging
@@ -23,7 +24,10 @@ init python:
     else:
         gamedir = renpy.config.gamedir
 
-    logdir = os.path.join(config.basedir, "ost_log.txt")
+    if renpy.android:
+        logdir = os.path.join(os.environ["ANDROID_PUBLIC"], "ost_log.txt")
+    else:
+        logdir = os.path.join(config.basedir, "ost_log.txt")
     if os.path.exists(logdir):
         os.remove(logdir)
 
@@ -393,9 +397,13 @@ init python:
         sec = tags.duration
         try:
             image_data = tags.get_image()
-
-            with renpy.exports.file("python-packages/binaries.txt") as a:
-                lines = a.readlines()
+            
+            if renpy.android:
+                with io.open(os.getenv["ANDROID_PRIVATE"] + "/x-game/x-python-packages/x-binaries.txt", "rb") as a:
+                    lines = a.readlines() 
+            else:
+                with renpy.exports.file("python-packages/binaries.txt") as a:
+                    lines = a.readlines()
 
             jpgbytes = bytes("\\xff\\xd8\\xff")
             utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n")
