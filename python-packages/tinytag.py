@@ -177,10 +177,10 @@ class TinyTag(object):
             return tag
 
     @classmethod
-    def get_renpy(cls, filename, tags=True, duration=True, image=False, ignore_errors=False):
+    def get_renpy(cls, filename, tags=True, duration=True, image=False, apk=False, ignore_errors=False):
         import ost_apk
         ## TODO: Make path obtain/data
-        if renpy.android:
+        if renpy.android and apk:
             mod_apk = ost_apk.AltAPK(prefix="assets/x-game")
             split_filename = filename.split("/")
             new_filename = ""
@@ -188,7 +188,7 @@ class TinyTag(object):
                 new_filename += "/x-" + x 
 
             with mod_apk.open(new_filename) as af:
-                full_path = os.path.join(os.path.realpath(af.name)) + "/assets/x-game" + new_filename
+                full_path = os.path.join(os.path.realpath(af.name), "assets/x-game", new_filename)
                 parser_class = cls.get_parser_class(full_path, af)
                 tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
                 tag.load(tags=tags, duration=duration, image=image)

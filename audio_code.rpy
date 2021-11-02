@@ -21,6 +21,9 @@ init python:
         try: os.mkdir(os.path.join(os.environ["ANDROID_PUBLIC"], "game"))
         except: pass
         gamedir = os.path.join(os.environ["ANDROID_PUBLIC"], "game")
+        if renpy.version_tuple == (6, 99, 12, 4, 2187):
+            try: renpy.exports.file(gamedir + "/binaries.txt")
+            except: open(gamedir + "/binaries.txt", "wb").write(renpy.file("python-packages/binaries.txt").read())
     else:
         gamedir = renpy.config.gamedir
 
@@ -398,8 +401,8 @@ init python:
         try:
             image_data = tags.get_image()
             
-            if renpy.android:
-                with io.open(os.getenv["ANDROID_PRIVATE"] + "/x-game/x-python-packages/x-binaries.txt", "rb") as a:
+            if renpy.version_tuple == (6, 99, 12, 4, 2187) and renpy.android:
+                with io.open(gamedir + "/binaries.txt", "rb") as a:
                     lines = a.readlines() 
             else:
                 with renpy.exports.file("python-packages/binaries.txt") as a:
@@ -471,7 +474,10 @@ init python:
         for x in rpa_file_list:
             if x not in exists:
                 logging.info("Obtaining metadata info for " + x + ".")
-                tags = TinyTag.get_renpy(x, image=True) 
+                if renpy.android:
+                    tags = TinyTag.get_renpy(x, image=True, apk=True) 
+                else:
+                    tags = TinyTag.get_renpy(x, image=True) 
                 title, artist, sec, altAlbum, album, comment = get_info(x, tags)
                 def_song(title, artist, x, priorityScan, sec, altAlbum, album, 
                         comment, True)
