@@ -454,10 +454,11 @@ init python:
             if x.endswith((file_types)) and "track/" + x not in exists:
                 path = "track/" + x
                 logging.info("Obtaining metadata info for " + path + ".")
-                tags = TinyTag.get_renpy(path, image=True) 
+                tags = TinyTag.get(gamedir + "/" + path, image=True) 
                 title, artist, sec, altAlbum, album, comment = get_info(path, tags)
                 def_song(title, artist, path, priorityScan, sec, altAlbum, album, 
                         comment, True)
+                exists.append(path)
 
         logging.info("Scanning Ren'Py files for music stored in the archived \"track\" folder.")
         rpa_list = [x + ".rpa" for x in config.archives]
@@ -470,7 +471,6 @@ init python:
             for archive in rpa_list:
                 rpa_file = RenPyArchive(os.path.join(gamedir, archive), padlength=0, key=0xDEADBEEF, version=3)
                 rpa_file_list += [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
-
         for x in rpa_file_list:
             if x not in exists:
                 logging.info("Obtaining metadata info for " + x + ".")

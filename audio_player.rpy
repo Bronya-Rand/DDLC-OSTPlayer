@@ -298,11 +298,19 @@ style music_player_music_text is navigation_button_text:
     insensitive_outlines []
     size 36
 
-style music_player_song_author_text:
-    font "mod_assets/music_player/NotoSansSC-Light.otf"
-    size 22
-    outlines[]
-    color "#000"
+# Switch to Noto Sans Regular TTF since 6.99 Android errors on Noto Sans SC OTF
+if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
+    style music_player_song_author_text:
+        font "mod_assets/music_player/NotoSans-Regular.ttf"
+        size 22
+        outlines[]
+        color "#000"
+else:
+    style music_player_song_author_text:
+        font "mod_assets/music_player/NotoSansSC-Light.otf"
+        size 22
+        outlines[]
+        color "#000"
 
 style song_progress_text:
     font "gui/font/Halogen.ttf"
