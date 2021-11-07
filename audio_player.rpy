@@ -4,10 +4,17 @@ init -1:
 
 image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress_text"))
 image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_duration_text"))
-image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)("music_player_music_text")) 
-image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)("music_player_song_author_text")) 
+image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)(
+                    "music_player_music_text")) 
+image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)(If(
+                    renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
+                    "song_author_text_android6", 
+                    "music_player_song_author_text"))) 
 image coverArt = DynamicDisplayable(refresh_cover_data) 
-image songDescription = DynamicDisplayable(renpy.curry(dynamic_description_text)("music_player_song_author_text")) 
+image songDescription = DynamicDisplayable(renpy.curry(dynamic_description_text)(If(
+                        renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
+                        "song_author_text_android6", 
+                        "music_player_song_author_text")))
 image playPauseButton = DynamicDisplayable(auto_play_pause_button)
 
 screen music_player:
@@ -298,19 +305,15 @@ style music_player_music_text is navigation_button_text:
     insensitive_outlines []
     size 36
 
-# Switch to Noto Sans Regular TTF since 6.99 Android errors on Noto Sans SC OTF
-if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
-    style music_player_song_author_text:
-        font "mod_assets/music_player/NotoSans-Regular.ttf"
-        size 22
-        outlines[]
-        color "#000"
-else:
-    style music_player_song_author_text:
-        font "mod_assets/music_player/NotoSansSC-Light.otf"
-        size 22
-        outlines[]
-        color "#000"
+style music_player_song_author_text:
+    font "mod_assets/music_player/NotoSansSC-Light.otf"
+    size 22
+    outlines[]
+    color "#000"
+
+style song_author_text_android6 is music_player_song_author_text
+style song_author_text_android6:
+    font "mod_assets/music_player/NotoSans-Regular.ttf"
 
 style song_progress_text:
     font "gui/font/Halogen.ttf"
