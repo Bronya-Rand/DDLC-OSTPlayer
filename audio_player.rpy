@@ -4,11 +4,17 @@ init -1:
 
 image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress_text"))
 image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_duration_text"))
-image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)("music_player_music_text")) 
-image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)("music_player_song_author_text")) 
+image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)(
+                    "music_player_music_text")) 
+image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)(If(
+                    renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
+                    "song_author_text_android6", 
+                    "music_player_song_author_text"))) 
 image coverArt = DynamicDisplayable(refresh_cover_data) 
-image songDescription = DynamicDisplayable(renpy.curry(dynamic_description_text)("music_player_song_author_text")) 
-image rpa_map_warning = DynamicDisplayable(renpy.curry(rpa_mapping_detection)("music_player_song_author_text"))
+image songDescription = DynamicDisplayable(renpy.curry(dynamic_description_text)(If(
+                        renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
+                        "song_author_text_android6", 
+                        "music_player_song_author_text")))
 image playPauseButton = DynamicDisplayable(auto_play_pause_button)
 
 screen music_player:
@@ -206,15 +212,11 @@ screen music_player:
         xalign 1.0 yalign 1.0
         xoffset -10 yoffset -10
         style "main_menu_version"
-    
-    if not config.developer:
-        add "rpa_map_warning" xpos 0.23 ypos 0.9
 
     textbutton _("Return"):
         style "return_button"
-        action [Return(), Function(check_paused_state), 
-                If(not prevTrack, None, 
-                Play('music', prevTrack, fadein=2.0))]
+        action [Return(), Function(ost_quit), If(not prevTrack, None, Play('music', 
+            prevTrack, fadein=2.0))]
 
 transform cover_art_fade(x,y):
     anchor(0.5, 0.5)
@@ -308,6 +310,10 @@ style music_player_song_author_text:
     size 22
     outlines[]
     color "#000"
+
+style song_author_text_android6 is music_player_song_author_text
+style song_author_text_android6:
+    font "mod_assets/music_player/NotoSans-Regular.ttf"
 
 style song_progress_text:
     font "gui/font/Halogen.ttf"
