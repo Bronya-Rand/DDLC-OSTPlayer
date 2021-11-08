@@ -428,7 +428,7 @@ init python:
             with open(os.path.join(gamedir, 'track/covers', coverAlbum + cover_formats), 'wb') as f:
                 f.write(image_data)
 
-            art = coverAlbum + cover_formats
+            art = "track/covers/" + coverAlbum + cover_formats
             logging.info("Obtained metadata info for " + path + ".")
             return tags.title, tags.artist, sec, art, tags.album, tags.comment
         except TypeError:
@@ -495,9 +495,8 @@ init python:
             logging.warning("No album cover was defined. Defaulting to \"nocover.png\".")
             altAlbum = "mod_assets/music_player/nocover.png" 
         else:
-            logging.info("Album cover was defined. Checking if it's loadable.")
-            altAlbum = "track/covers/"+altAlbum
             try:
+                logging.info("Album cover was defined. Checking if it's loadable.")
                 renpy.exports.image_size(altAlbum)
                 logging.info("Album cover is loadable. Defaulting cover to given path.")
             except:
@@ -507,10 +506,9 @@ init python:
             logging.warning("No album name was defined. Defaulting to \"Non-Metadata Song\".")
             description = "Non-Metadata Song"
         else:
-            if not comment: 
-                description = album
-            else:
-                description = album + '\n' + comment 
+            description = album
+        if comment: 
+            description += '\n' + comment 
         
         logging.info("Metadata info has been defined. Adding to \"autoDefineList\".")
         class_name = re.sub(r"-|'| ", "_", title)
