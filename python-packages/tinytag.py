@@ -9,6 +9,7 @@
 
 # MIT License
 
+# Copyright (C) 2021 GanstaKingofSA (Hanaka)
 # Copyright (c) 2014-2019 Tom Wallroth
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
