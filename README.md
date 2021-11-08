@@ -1,6 +1,8 @@
 # DDLC OST-Player
 
-A heavily revamped version of Nikso's Soundtrack Player for DDLC. <u>Current Version:</u> [**2.2**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
+A heavily revamped version of Nikso's Soundtrack Player for DDLC.
+
+<u>Current Version:</u> [**2.2**](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest)
 
 <p align="center">
    <img src=".github/assets/screenshot0001.png" alt="New UI" width=420x> 
@@ -44,7 +46,7 @@ This allows the user to play the soundtrack of mods outside the main story, side
 
    > Due to languages and font character limits, the fonts in DDLC OST-Player will not cover all languages. Riffic-Bold will have to be downloaded separately to comply with the FontSpring license.
 
-7. Android Support!
+7. Android Support! (Ren'Py 7 Required)
 
 ## What do I need to run this?
 
@@ -102,6 +104,9 @@ Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music p
 
 - For MusicBee: Right-Click your song within the player, select _Edit_ and edit away the info you want, then click _Apply_ then _OK_.
 - For MusicBrainz Picard: Add your song to Picard, select it, right-click the rectangle box that has 3 columns, select _Add New Tag_, select the tags you want to add like _Title_, _Artist_, _Comment_, _Album_, etc. There should be a blank box in the box area below, double-click it and edit away the info you want to add, then click _Save_ and press the _Save_ button near _Info_.
+
+## Why Ren'Py 7 only for Android?
+Ren'Py 6 has funky code in Android which causes it to not read sideloaded files. <u>Files defined within the game can still be played however.</u>
 
 ## Why did you do this?
 
