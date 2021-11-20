@@ -3,7 +3,7 @@ Installation:
 
 This assumes you already have a copy of DDLC with the mod template installed over it.
 
-1. Copy the ZIP files to your DDLC base folder (where DDLC.exe/DDLC.sh is).
+1. Copy the ZIP files to your DDLC game folder.
   a. If you are on MacOS/OS X, you must right-click DDLC.app and click Show Package Contents 
   then navigate to Contents/Resources/autorun and drop the ZIP file contents in there.
   
