@@ -61,8 +61,8 @@ This allows the user to play the soundtrack of mods outside the main story, side
 
 > This assumes you already have a copy of DDLC with the mod template installed over it.
 
-1. Drop all the contents in this ZIP file into the base folder of DDLC (where `DDLC.exe`/`DDLC.sh` is).
-   > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun` and drop the ZIP file contents in there.
+1. Drop all the contents in this ZIP file into the game folder of DDLC.
+   > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun/game` and drop the ZIP file contents in there.
 2. Open _options.rpy_ and add the following lines under line `192`
    ```py
    build.classify("game/python-packages/**", "mod all")
