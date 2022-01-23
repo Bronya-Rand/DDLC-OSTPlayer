@@ -235,6 +235,18 @@ init python:
         return renpy.text.text.Text(current_soundtrack.album, 
             style=style_name, substitute=False, size=descSize), 0.20
 
+    def auto_play_pause_button(st, at):
+        if renpy.audio.music.is_playing(channel='music_player'):
+            if pausedstate:
+                d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png")
+            else:
+                d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png", 
+                                                    action=current_music_pause)
+        else:
+            d = renpy.display.behavior.ImageButton("mod_assets/music_player/play.png", 
+                                                action=current_music_play)
+        return d, 0.20
+
     def convert_time(x):
         hour = ""
         
@@ -437,7 +449,12 @@ init python:
             if x.endswith((file_types)) and "track/" + x not in exists:
                 path = "track/" + x
                 logging.info("Obtaining metadata info for " + path + ".")
-                tags = TinyTag.get(gamedir + "/" + path, image=True) 
+
+                try: tags = TinyTag.get(gamedir + "/" + path, image=True) 
+                except IOError: 
+                    logging.error("'IOError' while obtaining metadata info for " + path + ". Skipping song.")
+                    continue
+
                 albumart = get_info(path, tags)
                 def_song(path, tags, albumart, True)
                 exists.append(path)
@@ -458,9 +475,15 @@ init python:
             if x not in exists:
                 logging.info("Obtaining metadata info for " + x + ".")
                 if renpy.android:
-                    tags = TinyTag.get_renpy(x, image=True, apk=True) 
+                    try: tags = TinyTag.get_renpy(x, image=True, apk=True) 
+                    except: 
+                        logging.error("'IOError' while obtaining metadata info for " + x + ". Skipping song.")
+                        continue
                 else:
-                    tags = TinyTag.get_renpy(x, image=True) 
+                    try: tags = TinyTag.get_renpy(x, image=True) 
+                    except IOError: 
+                        logging.error("'IOError' while obtaining metadata info for " + x + ". Skipping song.")
+                        continue
                 albumart = get_info(path, tags)
                 def_song(x, tags, albumart, True)
 
