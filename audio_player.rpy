@@ -1,5 +1,8 @@
 
+# Determines Compact Mode or List Mode UIs
 default persistent.listui = False
+# Automatically reverts the music playing before the player launched.
+default persistent.auto_restore_music = True
 
 image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress_text"))
 image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_duration_text"))
@@ -266,9 +269,16 @@ screen new_music_room():
 
     # Start the music playing on entry to the music room.
     on "replace" action [Function(ost_start), Stop("music", fadeout=1.0)]
+    on "show" action [Function(ost_start), Stop("music", fadeout=1.0)]
 
     # Restore the main menu music upon leaving.
-    on "replaced" action [Function(ost_log_stop), Stop("music_player", fadeout=1.0), Play("music", prevTrack, fadein=1.0)]
+    on "hide" action [Function(ost_log_stop), If(persistent.auto_restore_music,
+        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", prevTrack, fadein=1.0)],
+        SetMute("music", True))]
+    on "replaced" action [Hide("music_settings"), Hide("music_list"), Hide("music_list_type"), 
+        Hide("music_info"), Function(ost_log_stop), If(persistent.auto_restore_music,
+        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", prevTrack, fadein=1.0)],
+        SetMute("music", True))]
 
 screen music_list_type(type=None):
 
@@ -289,9 +299,7 @@ screen music_list_type(type=None):
             ypos 0.005
             xalign 0.52 
             text "Music List":
-                color "#000"
-                outlines[]
-                size 24
+                style "music_player_generic_text"
 
         hbox:
             ypos 0.005
@@ -396,8 +404,7 @@ screen music_list(type=None, arg=None):
             ypos 0.005
             xalign 0.52 
             text "Music List":
-                color "#000"
-                outlines[]
+                style "music_player_generic_text"
                 size 24
 
         hbox:
@@ -438,9 +445,7 @@ screen music_settings():
             ypos 0.005
             xalign 0.52 
             text "OST-Player Settings":
-                color "#000"
-                outlines[]
-                size 24
+                style "music_player_generic_text"
 
         hbox:
             ypos 0.005
@@ -461,9 +466,12 @@ screen music_settings():
                 
                 textbutton "Compact Mode":
                     style_prefix "radio" 
-                    action [If(renpy.get_screen("music_list_type"), Hide("music_list_type"), 
-                        If(renpy.get_screen("music_list"), Hide("music_list"), None)),
+                    action [Hide("music_list_type"), Hide("music_list"), Hide("music_info"),
                         ToggleVariable("persistent.listui", False, True)]
+
+                textbutton "Restore Music Channel Music":
+                    style_prefix "radio" 
+                    action InvertSelected(ToggleVariable("persistent.auto_restore_music", False, True))
                         
                 textbutton "About DDLC OST-Player":
                     text_style "navigation_button_text" 
@@ -505,11 +513,18 @@ screen music_info():
                 python:
                     comment = current_soundtrack.description or None
                 
-                text "{u}Album Artist{/u}: [current_soundtrack.albumartist]" style "music_player_generic_text"
-                text "{u}Composer{/u}: [current_soundtrack.composer]" style "music_player_generic_text"
-                text "{u}Genre{/u}: [current_soundtrack.genre]" style "music_player_generic_text"
-                text "{u}Sideloaded{/u}: [current_soundtrack.sideloaded]" style "music_player_generic_text"
-                text "{u}Comment{/u}: [comment]" style "music_player_generic_text"
+                if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
+                    text "{u}Album Artist{/u}: [current_soundtrack.albumartist]" style "renpy6_android_music_player_info_text"
+                    text "{u}Composer{/u}: [current_soundtrack.composer]" style "renpy6_android_music_player_info_text"
+                    text "{u}Genre{/u}: [current_soundtrack.genre]" style "renpy6_android_music_player_info_text"
+                    text "{u}Sideloaded{/u}: [current_soundtrack.sideloaded]" style "renpy6_android_music_player_info_text"
+                    text "{u}Comment{/u}: [comment]" style "renpy6_android_music_player_info_text"
+                else:
+                    text "{u}Album Artist{/u}: [current_soundtrack.albumartist]" style "music_player_info_text"
+                    text "{u}Composer{/u}: [current_soundtrack.composer]" style "music_player_info_text"
+                    text "{u}Genre{/u}: [current_soundtrack.genre]" style "music_player_info_text"
+                    text "{u}Sideloaded{/u}: [current_soundtrack.sideloaded]" style "music_player_info_text"
+                    text "{u}Comment{/u}: [comment]" style "music_player_info_text"
 
     on "hide" action With(Dissolve(0.25))    
 
@@ -570,24 +585,31 @@ style song_duration_text is song_progress_text:
 style l_list:
     left_padding 5
 
-style music_player_generic_text is music_player_alt_list_title_text:
-    size 24
-    bold False
-
-style renpy6_android_text:
+style renpy_generic_text:
     color "#000"
     outlines []
 
-style renpy6_android_song_title_text is renpy6_android_text:
+style music_player_info_text is music_player_alt_list_title_text:
+    size 20
+    bold False
+
+style music_player_generic_text is renpy_generic_text:
+    size 24
+    bold False
+
+style renpy6_android_song_title_text is renpy_generic_text:
     size 36
     bold True
 
-style renpy6_android_song_author_text is renpy6_android_text:
+style renpy6_android_song_author_text is renpy_generic_text:
     size 22
 
-style renpy6_android_alt_list_title_text is renpy6_android_text:
+style renpy6_android_alt_list_title_text is renpy_generic_text:
     size 18
     bold True
 
-style renpy6_android_alt_list_author_text is renpy6_android_text:
+style renpy6_android_alt_list_author_text is renpy_generic_text:
     size 16
+
+style renpy6_android_music_player_info_text is renpy_generic_text:
+    size 22

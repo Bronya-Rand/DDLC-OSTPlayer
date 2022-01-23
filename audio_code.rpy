@@ -275,7 +275,7 @@ init python:
         if not renpy.audio.music.is_playing(channel='music_player'):
             return
         
-        soundtrack_position = renpy.audio.music.get_pos(channel = 'music_player') + 1.6
+        soundtrack_position = (renpy.audio.music.get_pos(channel = 'music_player') or 0.0) + 1.6
 
         if soundtrack_position is not None:
             current_soundtrack_pause = ("<from " + str(soundtrack_position) + ">" 
@@ -512,7 +512,7 @@ init python:
         global prevTrack
 
         logging.info("Getting music playing from music channel.")
-        prevTrack = renpy.audio.music.get_playing(channel='music')
+        prevTrack = renpy.audio.music.get_playing(channel='music') or prevTrack
         logging.info("Obtained music status from \"renpy.audio.music\".")
 
         if not prevTrack:
@@ -560,3 +560,4 @@ init python:
         os.remove(os.path.join(gamedir, "track", "covers", x))
 
     scan_song()
+    renpy.game.preferences.set_mute("music", False)
