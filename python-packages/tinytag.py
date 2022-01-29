@@ -9,7 +9,6 @@
 
 # MIT License
 
-# Copyright (C) 2021 GanstaKingofSA (Hanaka)
 # Copyright (c) 2014-2019 Tom Wallroth
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,8 +42,6 @@ import io
 import sys
 from io import BytesIO
 import re
-import renpy
-import ost_backend
 
 DEBUG = os.environ.get('DEBUG', False)  # some of the parsers can print debug info
 
@@ -177,32 +174,6 @@ class TinyTag(object):
             tag.load(tags=tags, duration=duration, image=image)
             return tag
 
-    @classmethod
-    def get_renpy(cls, filename, tags=True, duration=True, image=False, apk=False, ignore_errors=False):
-        import ost_apk
-        ## TODO: Make path obtain/data
-        if renpy.android and apk:
-            mod_apk = ost_apk.AltAPK(prefix="assets/x-game")
-            split_filename = filename.split("/")
-            new_filename = ""
-            for x in split_filename:
-                new_filename += "/x-" + x 
-
-            with mod_apk.open(new_filename) as af:
-                full_path = os.path.join(os.path.realpath(af.name), "assets/x-game", new_filename)
-                parser_class = cls.get_parser_class(full_path, af)
-                tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
-                tag.load(tags=tags, duration=duration, image=image)
-        else:
-            full_path = os.path.join(renpy.config.gamedir, filename).replace("\\", "/")
-            
-            with ost_backend.file(filename) as af:
-                parser_class = cls.get_parser_class(full_path, af)
-                tag = parser_class(af, 1, ignore_errors=ignore_errors) #1 because RPAs can't fetch filesize
-                tag.load(tags=tags, duration=duration, image=image)
-                
-        return tag
-
     def __str__(self):
         return json.dumps(OrderedDict(sorted(self.as_dict().items())))
 
@@ -223,7 +194,7 @@ class TinyTag(object):
         the payload (bytestring) can be changed using the transfunc"""
         if getattr(self, fieldname):  # do not overwrite existing data
             return
-
+        
         if not transfunc:
             value = bytestring  
         elif not id3key:
@@ -264,7 +235,7 @@ class TinyTag(object):
         raise NotImplementedError()
 
     def update(self, other):
-        # update the values of this tag with the values from another ftag
+        # update the values of this tag with the values from another tag
         for key in ['track', 'track_total', 'title', 'artist',
                     'album', 'albumartist', 'year', 'duration',
                     'genre', 'disc', 'disc_total', 'comment', 'composer']:
@@ -1096,9 +1067,6 @@ class Wma(TinyTag):
 
     def __decode_string(self, bytestring):
         return self._unpad(codecs.decode(bytestring, 'utf-16'))
-
-    def __decode_alt_string(self, bytestring):
-        return self._unpad(codecs.decode(bytestring, 'utf-8'))
 
     def __decode_ext_desc(self, value_type, value):
         """ decode ASF_EXTENDED_CONTENT_DESCRIPTION_OBJECT values"""
