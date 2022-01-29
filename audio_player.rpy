@@ -89,13 +89,15 @@ screen new_music_room():
 
                                 imagebutton:
                                     idle "mod_assets/music_player/backward.png"
-                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]#ost.Previous()]
+                                    hover "mod_assets/music_player/backwardHover.png"
+                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
 
                                 add "playPauseButton"
 
                                 imagebutton:
                                     idle "mod_assets/music_player/forward.png"
-                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]#ost.Next()]
+                                    hover "mod_assets/music_player/forwardHover.png"
+                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
 
                                 if persistent.listui:
 
@@ -191,6 +193,7 @@ screen new_music_room():
                 cols 1
                 mousewheel True
                 scrollbars "vertical"
+                draggable True
 
                 xalign 0.5
                 ypos 0.25
@@ -203,7 +206,7 @@ screen new_music_room():
                         xsize 900
                         hbox:
                             imagebutton:
-                                xsize 64 ysize 64
+                                xsize 66 ysize 66
                                 idle Transform(ConditionSwitch(current_soundtrack == st, If(pausedstate, "mod_assets/music_player/music_list_pause.png", 
                                     "mod_assets/music_player/music_list_play.png"), "True", st.cover_art), size=(64, 64))
                                 hover Transform(ConditionSwitch(current_soundtrack == st, If(pausedstate, "mod_assets/music_player/music_list_play.png", 
@@ -267,6 +270,22 @@ screen new_music_room():
         xoffset -10 yoffset -10
         style "main_menu_version"
 
+    if not config.developer:
+        hbox:
+            xalign 0.5 yalign 0.98
+
+            python:
+                try: 
+                    renpy.file("RPASongMetadata.json")
+                    file_found = True
+                except: file_found = False
+            
+            if not file_found:
+                imagebutton:
+                    idle "mod_assets/music_player/osterror.png"
+                    action Show("dialog", message="{b}Warning{/b}\nThe RPA metadata file hasn't been generated.\nSongs in the {i}track{/i} folder won't be listed if you build your mod without it.\n Set {i}config.developer{/i} to {u}True{/u} in order to generate this file.",
+                        ok_action=Hide("dialog"))
+
     # Start the music playing on entry to the music room.
     on "replace" action [Function(ost_start), Stop("music", fadeout=1.0)]
     on "show" action [Function(ost_start), Stop("music", fadeout=1.0)]
@@ -316,6 +335,7 @@ screen music_list_type(type=None):
 
             viewport id "mlt":
                 mousewheel True
+                draggable True
                 has vbox
 
                 if type is None:
@@ -421,7 +441,7 @@ screen music_list(type=None, arg=None):
             ysize 200
 
             viewport id "ml":
-                
+                draggable True
                 mousewheel True
                 has vbox
 
@@ -462,6 +482,7 @@ screen music_settings():
 
             viewport id "mlt":
                 mousewheel True
+                draggable True
                 has vbox
                 
                 textbutton "Compact Mode":
@@ -475,7 +496,7 @@ screen music_settings():
                         
                 textbutton "About DDLC OST-Player":
                     text_style "navigation_button_text" 
-                    action Show("dialog", message="DDLC OST-Player by GanstaKingofSA.\nCopyright 2020-2022 GanstaKingofSA.", 
+                    action Show("dialog", message="DDLC OST-Player by GanstaKingofSA.\nCopyright © 2020-2022 GanstaKingofSA.", 
                         ok_action=Hide("dialog"))
 
     on "hide" action With(Dissolve(0.25))    
@@ -508,6 +529,7 @@ screen music_info():
 
             viewport id "mi":
                 mousewheel True
+                draggable True
                 has vbox
 
                 python:

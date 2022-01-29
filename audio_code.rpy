@@ -8,8 +8,15 @@ init python:
     import os
     import pygame_sdl2
     import logging
+    import json
     from tinytag import TinyTag
-    from minimalRPATool import RenPyArchive
+
+    # Responsible to build OST-Player in RPA/APK
+    renpy.store.build.archive("track", "mod")
+    renpy.store.build.classify("game/RPASongMetadata.json", "track all")
+    renpy.store.build.classify("game/python-packages/binaries.txt", "mod all")
+    renpy.store.build.classify("game/python-packages/tinytag.py", "mod all")
+    renpy.store.build.classify("game/track/**", "track all")
 
     # Creation of Music Room and Code Setup
     ostVersion = 3.0
@@ -161,7 +168,7 @@ init python:
                 else:
                     pathToSong = current_soundtrack.path
 
-                tags = TinyTag.get_renpy(pathToSong, image=False)
+                tags = TinyTag.get(pathToSong, image=False)
                     
                 if tags.duration:
                     return tags.duration
@@ -216,7 +223,7 @@ init python:
             substitute=False, size=authorNameSize), 0.20
 
     def refresh_cover_data(st, at):
-        return renpy.display.im.image(current_soundtrack.cover_art), 0.20
+        return renpy.display.im.image(current_soundtrack.cover_art.replace("[", "\[")), 0.20
 
     def dynamic_album_text(style_name, st, at):
         desc = len(current_soundtrack.album)
@@ -372,6 +379,7 @@ init python:
     def refresh_list():
         logging.info("Refreshing the music player list.")
         scan_song()
+        if renpy.config.developer: rpa_mapping()
         resort()
 
     def resort():
@@ -417,10 +425,12 @@ init python:
                     logging.warning("Improper PNG data was found. Repairing cover art.")
                     image_data = re.sub(utfbytes, lines[2], image_data)
 
-            coverAlbum = re.sub(r"[^a-zA-Z0-9 ]", "", tags.album)
+            coverAlbum = re.sub(r"(\\|/|\:|\?|\*|\<|\>|\||\[|\])", "", tags.album)
+
+            if not os.path.exists(os.path.join(gamedir, 'track/covers', coverAlbum + cover_formats)):
             
-            with open(os.path.join(gamedir, 'track/covers', coverAlbum + cover_formats), 'wb') as f:
-                f.write(image_data)
+                with open(os.path.join(gamedir, 'track/covers', coverAlbum + cover_formats), 'wb') as f:
+                    f.write(image_data)
 
             art = "track/covers/" + coverAlbum + cover_formats
             logging.info("Obtained album cover for " + path + ".")
@@ -433,16 +443,7 @@ init python:
         global autoDefineList
 
         logging.info("Scanning music directories.")
-        exists = []
-        logging.info("Checking for removed songs.")
-
-        for x in autoDefineList[:]:
-            try:
-                renpy.exports.file(x.path)
-                exists.append(x.path)    
-            except:
-                logging.info("Removed " + x.path + " from the music player list.")
-                autoDefineList.remove(x)
+        exists = check_removed_songs()
         
         logging.info("Scanning the \"track\" folder for music.")
         for x in os.listdir(gamedir + '/track'):
@@ -459,33 +460,19 @@ init python:
                 def_song(path, tags, albumart, True)
                 exists.append(path)
 
-        logging.info("Scanning Ren'Py files for music stored in the archived \"track\" folder.")
-        rpa_list = [x + ".rpa" for x in config.archives]
-        rpa_file_list = []
-        if renpy.android:
-            logging.info("Android platform was detected. Scanning music via \"renpy.list_files()\".")
-            rpa_file_list = [x for x in renpy.list_files() if "track/" in x and x.endswith((file_types))]
-        else:
-            logging.info("Scanning Ren'Py archive files for music using \"minimalRPATool\".")
-            for archive in rpa_list:
-                rpa_file = RenPyArchive(os.path.join(gamedir, archive), padlength=0, key=0xDEADBEEF, version=3)
-                rpa_file_list += [x for x in rpa_file.list() if "track/" in x and x.endswith((file_types))]
+    def check_removed_songs():
+        exists = []
+        logging.info("Checking for removed songs.")
 
-        for x in rpa_file_list:
-            if x not in exists:
-                logging.info("Obtaining metadata info for " + x + ".")
-                if renpy.android:
-                    try: tags = TinyTag.get_renpy(x, image=True, apk=True) 
-                    except: 
-                        logging.error("'IOError' while obtaining metadata info for " + x + ". Skipping song.")
-                        continue
-                else:
-                    try: tags = TinyTag.get_renpy(x, image=True) 
-                    except IOError: 
-                        logging.error("'IOError' while obtaining metadata info for " + x + ". Skipping song.")
-                        continue
-                albumart = get_info(path, tags)
-                def_song(x, tags, albumart, True)
+        for x in autoDefineList[:]:
+            try:
+                renpy.exports.file(x.path)
+                exists.append(x.path)    
+            except:
+                logging.info("Removed " + x.path + " from the music player list.")
+                autoDefineList.remove(x)
+
+        return exists
 
     def def_song(path, tags, albumart, unlocked=True):
         logging.info("Defining song located in " + path + " to the music player.")            
@@ -539,6 +526,8 @@ init python:
         logging.shutdown()
 
     def ost_start():
+        if renpy.config.developer: rpa_mapping()
+        else: rpa_load_mapping() 
         get_music_channel_info()
         resort()
 
@@ -546,6 +535,65 @@ init python:
         check_paused_state()
         ost_log_stop()
 
+    def rpa_mapping():
+        if not renpy.config.developer: return
+        data = []
+
+        try: os.remove(os.path.join(gamedir, "RPASongMetadata.json"))
+        except: pass
+
+        for y in autoDefineList:
+            data.append ({
+                "class": re.sub(r"-|'| ", "_", y.name or str(y.path.replace("track/", ""))),
+                "title": y.name,
+                "artist": y.author,
+                "album": y.album,
+                "albumartist": y.albumartist,
+                "composer": y.composer,
+                "genre": y.genre,
+                "path": y.path,
+                "sec": y.byteTime,
+                "sideloaded": y.sideloaded,
+                "comment": y.description,
+                "cover_art": y.cover_art,
+                "unlocked": y.unlocked,
+            })
+
+        with open(gamedir + "/RPASongMetadata.json", "a") as f:
+            json.dump(data, f)
+
+    def rpa_load_mapping():
+        try: 
+            logging.info("Attempting to load 'RPASongMetadata.json'.")
+            with renpy.exports.file("RPASongMetadata.json") as f:
+                data = json.load(f)
+            logging.info("Loaded 'RPASongMetadata.json'.")
+        except IOError: 
+            logging.warning("Attempting to load 'RPASongMetadata.json' failed.")
+            return
+        
+        exists = check_removed_songs()
+
+        for p in data:
+            logging.info("Defining cached class " + p['class'] + " to the music player.")
+            if p['path'] not in exists:
+
+                p['class'] = soundtrack(
+                    name = p['title'],
+                    author = p['artist'],
+                    album = p['album'],
+                    albumartist = p['albumartist'],
+                    composer = p['composer'],
+                    genre = p['genre'],
+                    path = p['path'],
+                    byteTime = p['sec'],
+                    sideloaded = p['sideloaded'],
+                    description = p['comment'],
+                    cover_art = p['cover_art'],
+                    unlocked = p['unlocked']
+                )
+                autoDefineList.append(p['class'])
+    
     ost_log_start()
 
     logging.info("Making the \"track\" folder in " + gamedir + " if it's not present.")
@@ -560,4 +608,5 @@ init python:
         os.remove(os.path.join(gamedir, "track", "covers", x))
 
     scan_song()
+
     renpy.game.preferences.set_mute("music", False)
