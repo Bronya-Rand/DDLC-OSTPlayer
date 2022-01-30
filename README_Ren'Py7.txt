@@ -3,8 +3,9 @@ Installation:
 
 This assumes you already have a copy of DDLC with the mod template installed over it.
 
-1. Copy the ZIP files to your DDLC game folder.
-  a. If you are on MacOS/OS X, you must right-click DDLC.app and click Show Package Contents 
+1. Copy the 'game' folder to your DDLC directory folder (where DDLC.exe/DDLC.sh reside in).
+  a. DO NOT COPY the 'renpy' folder as this is for Ren'Py 6 ONLY.
+  b. If you are on MacOS/OS X, you must right-click DDLC.app and click Show Package Contents 
   then navigate to Contents/Resources/autorun and drop the ZIP file contents in there.
 
 2. Copy this line to 'screens.rpy' under textbutton _("Load Game").
@@ -12,13 +13,11 @@ This assumes you already have a copy of DDLC with the mod template installed ove
     textbutton _("OST Player") action [ShowMenu("new_music_room"), Function(ost_start), SensitiveIf(renpy.get_screen("new_music_room") == None)]
 
 3. (Recommended but Optional) Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
-    a. Copy 'riffic-bold.ttf' in the Fonts folder and paste it in the game/mod_assets/music_player folder
+    a. Copy 'riffic-bold.ttf' in the Fonts folder and paste it in 'mod_assets/music_player'.
     b. Open 'audio_player.rpy' and remove the # symbol in front of line 556.
 
 4. Add music to the track folder or define them manually in 'manualtracks.rpy'.
 5. Run DDLC and enjoy!
-
-Read README.md on Github or here for more information.
 
 Credits!
 - Nikso - Original Developer

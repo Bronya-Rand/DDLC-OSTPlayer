@@ -27,25 +27,16 @@ This allows the user to play the mods' soundtrack alongside a players' own music
    > \* - Due to languages and font character limits, the fonts in DDLC OST-Player will not cover all languages. Riffic-Bold will have to be downloaded separately to comply with the FontSpring license.
 7. Android Support! (Ren'Py 7 Recommended)
 
-## Installation Requirements
-> This assumes you already have a copy of DDLC with the mod template installed over it.
-1. The Latest DDLC OST-Player [ZIP file](https://github.com/GanstaKingofSA/DDLC-OSTPlayer/releases/latest).
-2. **(Optional)** Riffic-Bold from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) to add more font characters to the program.
-   > This font is free, but requires you to make a Fontspring account and have a _Desktop license_ for it in order for you to use this.
-
 ## Install Steps
-1. Drop all the contents in this ZIP file into the base folder of DDLC (where `DDLC.exe`/`DDLC.sh` is).
-   > If you are on MacOS/OS X, you must right-click DDLC.app and click `Show Package Contents` then navigate to `Contents/Resources/autorun` and drop the ZIP file contents in there.
-2. Copy this line to _screens.rpy_ under `textbutton _("Load Game")`.
-   ```py
-   textbutton _("OST Player") action [ShowMenu("new_music_room"), Function(ost_start), SensitiveIf(renpy.get_screen("new_music_room") == None)]
-   ```
-3. **(Optional)** Download the `Riffic-Bold` font from [Fontspring](https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold) and copy the `riffic-bold.ttf` in _Fonts_ to `game/mod_assets/music_player`
-   - Open _audio_player.rpy_ and remove the `#` symbol in front of line `556`.
-4. Put music in the `track` folder inside the `game` folder and try it out!
+> This assumes you already have a copy of DDLC with the mod template installed over it.
+- For Ren'Py 6, refer to the [Ren'Py 6 installation file](README_Ren'Py6.txt).
+- For Ren'Py 7, refer to the [Ren'Py 7 installation file](README_Ren'Py7.txt).
 
-## Can I still define songs the old way?
-Yes you can with some caviats.
+## FAQ
+- Q. Can I still define songs the old way?
+
+   A. Yes you can with some caviats.
+
    1. `priority` has been removed.
    2. Manually defined songs require the following to be added after you fill out it's details.
       ```py
@@ -53,24 +44,26 @@ Yes you can with some caviats.
       ```
       > Change `Wake_Up_Unchanged` to your song variable
 
-See _manualtracks.rpy_ for a example or _audio_code.rpy_ for what can be defined.
+   See _manualtracks.rpy_ for a example or _audio_code.rpy_ for what can be defined.
 
-## Why is `Riffic-Bold` not included in DDLC OST Player?
-Riffic-Bold is not included in DDLC OST-Player due to licensing issues with Fontspring. In order to install Riffic-Bold you will need to download it yourself as a _Desktop license_ and install it onto your project as listed above in **How do I install this?**
+- Q. Why is `Riffic-Bold` not included in DDLC OST Player?
 
-## How do I add metadata info?
+   A. Riffic-Bold is not included in DDLC OST-Player due to licensing issues with Fontspring. In order to install Riffic-Bold you will need to download it yourself as a _Desktop license_ and add it to your project. See **Install Steps** on how to do so for your Ren'Py version.
 
-Right-click your song, Select Properties -> Details, and fill the blank boxes you can.
-Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music player, or [MusicBrainz Picard](https://picard.musicbrainz.org/) and find your song.
+- Q. How do I add metadata info?
 
-- For MusicBee: Right-Click your song within the player, select _Edit_ and edit away the info you want, then click _Apply_ then _OK_.
-- For MusicBrainz Picard: Add your song to Picard, select it, right-click the rectangle box that has 3 columns, select _Add New Tag_, select the tags you want to add like _Title_, _Artist_, _Comment_, _Album_, etc. There should be a blank box in the box area below, double-click it and edit away the info you want to add, then click _Save_ and press the _Save_ button near _Info_.
+  A. Right-click your song, Select Properties -> Details, and fill the blank boxes you can. Alternatively, use [MusicBee](https://www.getmusicbee.com/) or a similar music player, or [MusicBrainz Picard](https://picard.musicbrainz.org/) and find your song.
 
-## Why is Ren'Py 7 Recommended for Android?
-Ren'Py 6 has funky code in Android and requires patches to work properly.</u>
+  - For MusicBee: Right-Click your song within the player, select _Edit_ and edit away the info you want, then click _Apply_ then _OK_.
+  - For MusicBrainz Picard: Add your song to Picard, select it, right-click the rectangle box that has 3 columns, select _Add New Tag_, select the tags you want to add like _Title_, _Artist_, _Comment_, _Album_, etc. There should be a blank box in the box area below, double-click it and edit away the info you want to add, then click _Save_ and press the _Save_ button near _Info_.
 
-## Why did you do this?
-Cause I was bored and wanted to see RWBY songs play within DDLC and see song covers displayed. (Yang _:P_)
+- Q. Why is Ren'Py 7 Recommended for Android?
+
+  A. Ren'Py 6 has funky code in Android and requires patches to work properly.</u>
+
+- Q. Why did you do this?
+
+  A. Cause I was bored and wanted to see RWBY songs play within DDLC and see song covers displayed. (Yang _:P_)
 
 ## Credits
 
