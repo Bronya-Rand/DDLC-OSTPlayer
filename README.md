@@ -10,12 +10,11 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC.
 
 **DISCLAIMER:** This is not afiliated or endorsed by Team Salvato or Nikso. The Scattered Stars <u>logo</u> in `Wake Up Unchanged` is not free to use, but is only allowed in this build as a display to the soundtrack player. If you plan to use this, remove it in your final build.
 
-> All songs featured above are owned by the developer and are not included in DDLC OST Player. (Shoo UMG, SME, Rooster Teeth)
-
 ## What is DDLC OST Player?
 This allows the user to play the mods' soundtrack alongside a players' own music outside the main story.
 
 <u>Screenshots:</u> [Compact Mode (Default)](.github/assets/screenshot0001.png) • [List Mode](.github/assets/screenshot0002.png)
+> All songs featured above are owned by the developer and are not included in DDLC OST Player. (Shoo UMG, SME, Rooster Teeth)
 
 ## Features
 1. Ability to play MP3, OGG, WAV and OPUS files with metadata!
