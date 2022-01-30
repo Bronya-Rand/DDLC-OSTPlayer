@@ -82,4 +82,4 @@ This allows the user to play the mods' soundtrack alongside a players' own music
 - Ren'Py Discord - Feedback on Ren'Py Universal Player Feats Now In DDLC OST-Player
 - Weiss Schnee - Support (Weiss :D)
 
-Copyright 2019-2022 Azariel Del Carmen (GanstaKingofSA). All rights reserved.
+Copyright 2020-2022 Azariel Del Carmen (GanstaKingofSA). All rights reserved.
