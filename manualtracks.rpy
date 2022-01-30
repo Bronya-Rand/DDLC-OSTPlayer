@@ -1,9 +1,18 @@
 
 init python:    
-    ### Template for Manual Soundtracks
-    # This method still works however now you must include manualDefineList.append(variable) 
-    # to add it properly for refreshing.
-    # priority has been depreciated in favor for 'sideloaded'.
+    ## Manual Soundtracks Options
+    #     name - The song' name
+    #     author - The song' artist
+    #     path - The path to the song
+    #     album - The song' album
+    #     albumartist - The song' album artist
+    #     composer - The song' composer
+    #     genre - The song' genre
+    #     description - The song' description/comment
+    #     cover_art - The path to the song' cover art
+    #     unlocked = 'True' (without quotes) for unlocked or 
+    #                renpy.seen_audio("bgm/example.ogg") for True/False 
+    #                determination
 
     your_reality = soundtrack(
         name = "Your reality",
@@ -22,6 +31,8 @@ init python:
         cover_art = "mod_assets/music_player/sample/cover.png"
     )
     manualDefineList.append(Wake_Up_Unchanged)
+
+    ## Example
 
     # poem_panic = soundtrack(
     #     name = "Poem Panic",

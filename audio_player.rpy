@@ -10,7 +10,7 @@ image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)(
                     "music_player_music_text")) 
 image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)(If(
                     renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
-                    "renpy6_android_song_title_text", 
+                    "renpy6_android_song_author_text", 
                     "music_player_song_author_text")))  
 image albumName = DynamicDisplayable(renpy.curry(dynamic_album_text)(If(
                         renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
@@ -54,12 +54,12 @@ screen new_music_room():
                     xpos 0.08
                     yalign -0.25
 
-                    add "coverArt" xsize 200 ysize 200
+                    add "coverArt" at cover_art_resize(200)
                 else:
                     xpos 0.06
                     yalign 0.25
                 
-                    add "coverArt" xsize 350 ysize 350
+                    add "coverArt" at cover_art_resize(350)
 
                 vbox:
                     hbox:
@@ -192,10 +192,9 @@ screen new_music_room():
                 rows len(soundtracks)
                 cols 1
                 mousewheel True
-                scrollbars "vertical"
                 draggable True
 
-                xalign 0.5
+                xpos 0.03
                 ypos 0.25
                 xsize 950
                 ysize 380
@@ -275,8 +274,11 @@ screen new_music_room():
             xalign 0.5 yalign 0.98
 
             python:
-                try: 
-                    renpy.file("RPASongMetadata.json")
+                try:
+                    if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
+                        file(os.environ["ANDROID_PUBLIC"] + "/game/RPASongMetadata.json")
+                    else:
+                        renpy.file("RPASongMetadata.json")
                     file_found = True
                 except: file_found = False
             
@@ -486,13 +488,13 @@ screen music_settings():
                 has vbox
                 
                 textbutton "Compact Mode":
-                    style_prefix "radio" 
+                    style "radio_button" 
                     action [Hide("music_list_type"), Hide("music_list"), Hide("music_info"),
-                        ToggleVariable("persistent.listui", False, True)]
+                        ToggleField(persistent, "listui", False, True)]
 
                 textbutton "Restore Music Channel Music":
-                    style_prefix "radio" 
-                    action InvertSelected(ToggleVariable("persistent.auto_restore_music", False, True))
+                    style "radio_button" 
+                    action InvertSelected(ToggleField(persistent, "auto_restore_music", False, True))
                         
                 textbutton "About DDLC OST-Player":
                     text_style "navigation_button_text" 
@@ -608,6 +610,7 @@ style l_list:
     left_padding 5
 
 style renpy_generic_text:
+    font "mod_assets/music_player/NotoSans-Regular.ttf"
     color "#000"
     outlines []
 
@@ -627,11 +630,14 @@ style renpy6_android_song_author_text is renpy_generic_text:
     size 22
 
 style renpy6_android_alt_list_title_text is renpy_generic_text:
-    size 18
+    size 15
     bold True
 
 style renpy6_android_alt_list_author_text is renpy_generic_text:
-    size 16
+    size 14
 
 style renpy6_android_music_player_info_text is renpy_generic_text:
     size 22
+
+transform cover_art_resize(x):
+    size(x, x)

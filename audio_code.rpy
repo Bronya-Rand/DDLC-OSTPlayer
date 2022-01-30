@@ -11,7 +11,6 @@ init python:
     import json
     from tinytag import TinyTag
 
-    # Responsible to build OST-Player in RPA/APK
     renpy.store.build.archive("track", "mod")
     renpy.store.build.classify("game/RPASongMetadata.json", "track all")
     renpy.store.build.classify("game/python-packages/binaries.txt", "mod all")
@@ -28,9 +27,8 @@ init python:
         try: os.mkdir(os.path.join(os.environ["ANDROID_PUBLIC"], "game"))
         except: pass
         gamedir = os.path.join(os.environ["ANDROID_PUBLIC"], "game")
-        if renpy.version_tuple == (6, 99, 12, 4, 2187):
-            try: renpy.exports.file(gamedir + "/binaries.txt")
-            except: open(gamedir + "/binaries.txt", "wb").write(renpy.file("python-packages/binaries.txt").read())
+        try: file(gamedir + "/RPASongMetadata.json", "r")
+        except: open(gamedir + "/RPASongMetadata.json", "w").write(renpy.file("RPASongMetadata.json").read())
     else:
         gamedir = renpy.config.gamedir
 
@@ -379,7 +377,8 @@ init python:
     def refresh_list():
         logging.info("Refreshing the music player list.")
         scan_song()
-        if renpy.config.developer: rpa_mapping()
+        if renpy.config.developer:
+            rpa_mapping()
         resort()
 
     def resort():
@@ -469,8 +468,16 @@ init python:
                 renpy.exports.file(x.path)
                 exists.append(x.path)    
             except:
-                logging.info("Removed " + x.path + " from the music player list.")
-                autoDefineList.remove(x)
+                if renpy.android and not renpy.version_tuple == (6, 99, 12, 4, 2187):
+                    try:
+                        file(x.path)
+                        exists.append(x.path)
+                    except:
+                        logging.info("Removed " + x.path + " from the music player list.")
+                        autoDefineList.remove(x)
+                else:
+                    logging.info("Removed " + x.path + " from the music player list.")
+                    autoDefineList.remove(x)
 
         return exists
 
@@ -565,8 +572,12 @@ init python:
     def rpa_load_mapping():
         try: 
             logging.info("Attempting to load 'RPASongMetadata.json'.")
-            with renpy.exports.file("RPASongMetadata.json") as f:
-                data = json.load(f)
+            if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187): 
+                with file(gamedir + "/RPASongMetadata.json") as f:
+                    data = json.load(f)
+            else:
+                with renpy.exports.file("RPASongMetadata.json") as f:
+                    data = json.load(f)
             logging.info("Loaded 'RPASongMetadata.json'.")
         except IOError: 
             logging.warning("Attempting to load 'RPASongMetadata.json' failed.")
