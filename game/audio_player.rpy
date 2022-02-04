@@ -226,13 +226,14 @@ screen new_music_room():
                                     text "{b}[st.name]{/b}" style "music_player_alt_list_title_text"
                                     text "[st.author]" style "music_player_alt_list_author_text"
                                     text "[st.album]"  style "music_player_alt_list_author_text"
-                            vbox:
-                                yalign 0.5
-                                xpos -20
-                                if renpy.version_tuple == (6, 99, 12, 4, 2187) and renpy.android:
-                                    text convert_time(st.byteTime) style "renpy6_android_alt_list_author_text"
-                                else:
-                                    text convert_time(st.byteTime) style "music_player_alt_list_author_text"
+                            if st.byteTime:
+                                vbox:
+                                    yalign 0.5
+                                    xpos -20
+                                    if renpy.version_tuple == (6, 99, 12, 4, 2187) and renpy.android:
+                                        text convert_time(st.byteTime) style "renpy6_android_alt_list_author_text"
+                                    else:
+                                        text convert_time(st.byteTime) style "music_player_alt_list_author_text"
 
         if not persistent.listui:
             hbox at music_player_transition:
