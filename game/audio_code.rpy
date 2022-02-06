@@ -690,3 +690,6 @@ init python:
     ost_main = OSTPlayerMain()
     renpy.game.preferences.set_mute("music", False)
     ost_monitor = ExternalOSTMonitor()
+    
+    # Backwards Compatability
+    manualDefineList = ost_song_assign.manualList
