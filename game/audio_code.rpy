@@ -296,6 +296,9 @@ init python:
                 try: ost_info.current_soundtrack = soundtracks[index+1]
                 except: ost_info.current_soundtrack = soundtracks[0]
 
+            if not renpy.get_screen("new_music_room"):
+                renpy.notify("Now Playing: " + ost_info.get_title() + " - " + ost_info.get_artist())
+
             renpy.audio.music.play(ost_info.get_path(), self.channel, self.loopSong)
 
         def random_track(self):
@@ -305,6 +308,9 @@ init python:
                 if ost_info.current_soundtrack != soundtracks[a]:
                     unique = 0
                     ost_info.current_soundtrack = soundtracks[a]
+            
+            if not renpy.get_screen("new_music_room"):
+                renpy.notify("Now Playing: " + ost_info.get_title() + " - " + ost_info.get_artist())
 
             renpy.audio.music.play(ost_info.get_path(), self.channel, self.loopSong)
 
@@ -690,6 +696,6 @@ init python:
     ost_main = OSTPlayerMain()
     renpy.game.preferences.set_mute("music", False)
     ost_monitor = ExternalOSTMonitor()
-    
+
     # Backwards Compatability
     manualDefineList = ost_song_assign.manualList
