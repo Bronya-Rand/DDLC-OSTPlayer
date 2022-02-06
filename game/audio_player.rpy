@@ -4,20 +4,20 @@ default persistent.listui = False
 # Automatically reverts the music playing before the player launched.
 default persistent.auto_restore_music = True
 
-image readablePos = DynamicDisplayable(renpy.curry(music_pos)("song_progress_text"))
-image readableDur = DynamicDisplayable(renpy.curry(music_dur)("song_duration_text"))
-image titleName = DynamicDisplayable(renpy.curry(dynamic_title_text)(
+image readablePos = DynamicDisplayable(renpy.curry(ost_info.music_pos)("song_progress_text"))
+image readableDur = DynamicDisplayable(renpy.curry(ost_info.music_dur)("song_duration_text"))
+image titleName = DynamicDisplayable(renpy.curry(ost_info.dynamic_title_text)(
                     "music_player_music_text")) 
-image authorName = DynamicDisplayable(renpy.curry(dynamic_author_text)(If(
+image authorName = DynamicDisplayable(renpy.curry(ost_info.dynamic_author_text)(If(
                     renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
                     "renpy6_android_song_author_text", 
                     "music_player_song_author_text")))  
-image albumName = DynamicDisplayable(renpy.curry(dynamic_album_text)(If(
+image albumName = DynamicDisplayable(renpy.curry(ost_info.dynamic_album_text)(If(
                         renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
                         "renpy6_android_song_author_text", 
                         "music_player_song_author_text")))
-image playPauseButton = DynamicDisplayable(auto_play_pause_button)
-image coverArt = DynamicDisplayable(refresh_cover_data) 
+image playPauseButton = DynamicDisplayable(ost_controls.auto_play_pause_button)
+image coverArt = DynamicDisplayable(ost_info.refresh_cover_data) 
 
 screen new_music_room():
 
@@ -30,7 +30,7 @@ screen new_music_room():
         hbox at music_player_transition:
             style "music_player_hbox"
             
-            if not current_soundtrack:
+            if not ost_info.get_current_soundtrack():
                 if persistent.listui:
                     xpos 0.35
                 else:
@@ -90,29 +90,29 @@ screen new_music_room():
                                 imagebutton:
                                     idle "mod_assets/music_player/backward.png"
                                     hover "mod_assets/music_player/backwardHover.png"
-                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_backward)]
+                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(ost_controls.rewind_music)]
 
                                 add "playPauseButton"
 
                                 imagebutton:
                                     idle "mod_assets/music_player/forward.png"
                                     hover "mod_assets/music_player/forwardHover.png"
-                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(current_music_forward)]
+                                    action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(ost_controls.forward_music)]
 
                                 if persistent.listui:
 
                                     null width 15
 
                                     imagebutton:
-                                        idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", 
+                                        idle ConditionSwitch("ost_controls.loopSong", "mod_assets/music_player/replayOn.png", 
                                                             "True", "mod_assets/music_player/replay.png")
                                         hover "mod_assets/music_player/replayHover.png"
-                                        action [ToggleVariable("loopSong", False, True)]
+                                        action [ToggleVariable("ost_controls.loopSong", False, True)]
                                     imagebutton:
-                                        idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", 
+                                        idle ConditionSwitch("ost_controls.randomSong", "mod_assets/music_player/shuffleOn.png", 
                                                             "True", "mod_assets/music_player/shuffle.png")
                                         hover "mod_assets/music_player/shuffleHover.png"
-                                        action [ToggleVariable("randomSong", False, True)]
+                                        action [ToggleVariable("ost_controls.randomSong", False, True)]
                                     imagebutton:
                                         idle "mod_assets/music_player/info.png"
                                         hover "mod_assets/music_player/infoHover.png"
@@ -124,7 +124,7 @@ screen new_music_room():
                                     imagebutton:
                                         idle "mod_assets/music_player/refreshList.png"
                                         hover "mod_assets/music_player/refreshHover.png"
-                                        action [Function(refresh_list)]
+                                        action [Function(ost_song_assign.refresh_list)]
 
                                     null width 15
                                     
@@ -135,7 +135,7 @@ screen new_music_room():
                                         hover ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", 
                                             "mod_assets/music_player/volumeHover.png", "True", 
                                             "mod_assets/music_player/volumeOnHover.png")
-                                        action [Function(mute_player)]
+                                        action [Function(ost_controls.mute_player)]
                                         yoffset -8
                                     bar value Preference ("music_player_mixer volume") xsize 100 yoffset 8 xoffset -15
                                 
@@ -185,7 +185,7 @@ screen new_music_room():
                                     imagebutton:
                                         idle "mod_assets/music_player/refreshList.png"
                                         hover "mod_assets/music_player/refreshHover.png"
-                                        action [Function(refresh_list)]
+                                        action [Function(ost_song_assign.refresh_list)]
         
         if persistent.listui:   
             vpgrid id "mpl" at music_player_transition:
@@ -206,12 +206,12 @@ screen new_music_room():
                         hbox:
                             imagebutton:
                                 xsize 66 ysize 66
-                                idle Transform(ConditionSwitch(current_soundtrack == st, If(pausedstate, "mod_assets/music_player/music_list_pause.png", 
+                                idle Transform(ConditionSwitch(ost_info.get_current_soundtrack() == st, If(ost_controls.pausedState, "mod_assets/music_player/music_list_pause.png", 
                                     "mod_assets/music_player/music_list_play.png"), "True", st.cover_art), size=(64, 64))
-                                hover Transform(ConditionSwitch(current_soundtrack == st, If(pausedstate, "mod_assets/music_player/music_list_play.png", 
+                                hover Transform(ConditionSwitch(ost_info.get_current_soundtrack() == st, If(ost_controls.pausedState, "mod_assets/music_player/music_list_play.png", 
                                     "mod_assets/music_player/music_list_pause.png"), "True", "mod_assets/music_player/music_list_play.png"), size=(64, 64))
-                                action If(current_soundtrack == st, If(pausedstate, Function(current_music_play), Function(current_music_pause)), 
-                                    [SetVariable("pausedstate", False), SetVariable("current_soundtrack", st), Play("music_player", st.path, loop=loopSong, 
+                                action If(ost_info.get_current_soundtrack() == st, If(ost_controls.pausedState, Function(ost_controls.play_music), Function(ost_controls.pause_music)), 
+                                    [SetVariable("ost_controls.pausedState", False), Function(ost_info.set_current_soundtrack, st), Play("music_player", st.path, loop=ost_controls.loopSong, 
                                     fadein=2.0)])
 
                             null width 15
@@ -231,16 +231,16 @@ screen new_music_room():
                                     yalign 0.5
                                     xpos -20
                                     if renpy.version_tuple == (6, 99, 12, 4, 2187) and renpy.android:
-                                        text convert_time(st.byteTime) style "renpy6_android_alt_list_author_text"
+                                        text ost_info.convert_time(st.byteTime) style "renpy6_android_alt_list_author_text"
                                     else:
-                                        text convert_time(st.byteTime) style "music_player_alt_list_author_text"
+                                        text ost_info.convert_time(st.byteTime) style "music_player_alt_list_author_text"
 
         if not persistent.listui:
             hbox at music_player_transition:
                 xalign 0.4
                 yalign 0.85
             
-                if current_soundtrack:
+                if ost_info.get_current_soundtrack():
                     vbox:
                         hbox:
                             bar:
@@ -261,7 +261,7 @@ screen new_music_room():
                         hover ConditionSwitch("preferences.get_volume(\"music_player_mixer\") == 0.0", 
                             "mod_assets/music_player/volumeHover.png", "True", 
                             "mod_assets/music_player/volumeOnHover.png")
-                        action [Function(mute_player)]
+                        action [Function(ost_controls.mute_player)]
                         yoffset -16 xoffset 10
                     bar value Preference ("music_player_mixer volume") xsize 100 xoffset 10
 
@@ -290,16 +290,16 @@ screen new_music_room():
                         ok_action=Hide("dialog"))
 
     # Start the music playing on entry to the music room.
-    on "replace" action [Function(ost_start), Stop("music", fadeout=1.0)]
-    on "show" action [Function(ost_start), Stop("music", fadeout=1.0)]
+    on "replace" action [Function(ost_main.ost_start), Stop("music", fadeout=1.0)]
+    on "show" action [Function(ost_main.ost_start), Stop("music", fadeout=1.0)]
 
     # Restore the main menu music upon leaving.
-    on "hide" action [Function(ost_log_stop), If(persistent.auto_restore_music,
-        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", prevTrack, fadein=1.0)],
+    on "hide" action [If(persistent.auto_restore_music,
+        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", ost_main.prevTrack, fadein=1.0)],
         SetMute("music", True))]
     on "replaced" action [Hide("music_settings"), Hide("music_list"), Hide("music_list_type"), 
-        Hide("music_info"), Function(ost_log_stop), If(persistent.auto_restore_music,
-        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", prevTrack, fadein=1.0)],
+        Hide("music_info"), Function(ost_main.ost_log_stop), If(persistent.auto_restore_music,
+        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", ost_main.prevTrack, fadein=1.0)],
         SetMute("music", True))]
 
 screen music_list_type(type=None):
@@ -452,7 +452,7 @@ screen music_list(type=None, arg=None):
                     textbutton "[nst.name]":
                         style "l_list"
                         text_style "music_list_button_text"
-                        action [Hide("music_list"), SetVariable("current_soundtrack", nst), Play("music_player", nst.path, loop=loopSong, fadein=2.0)]#ost.Play(nst.path)]
+                        action [Hide("music_list"), Function(ost_info.set_current_soundtrack, nst), Play("music_player", nst.path, loop=ost_controls.loopSong, fadein=2.0)]
 
     on "hide" action With(Dissolve(0.25))
 
@@ -536,19 +536,23 @@ screen music_info():
                 has vbox
 
                 python:
-                    comment = current_soundtrack.description or None
+                    albumartist = ost_info.get_album_artist()
+                    composer = ost_info.get_composer()
+                    genre = ost_info.get_genre()
+                    sideloaded = ost_info.get_sideloaded()
+                    comment = ost_info.get_description() or None
                 
                 if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
-                    text "{u}Album Artist{/u}: [current_soundtrack.albumartist]" style "renpy6_android_music_player_info_text"
-                    text "{u}Composer{/u}: [current_soundtrack.composer]" style "renpy6_android_music_player_info_text"
-                    text "{u}Genre{/u}: [current_soundtrack.genre]" style "renpy6_android_music_player_info_text"
-                    text "{u}Sideloaded{/u}: [current_soundtrack.sideloaded]" style "renpy6_android_music_player_info_text"
+                    text "{u}Album Artist{/u}: [albumartist]" style "renpy6_android_music_player_info_text"
+                    text "{u}Composer{/u}: [composer]" style "renpy6_android_music_player_info_text"
+                    text "{u}Genre{/u}: [genre]" style "renpy6_android_music_player_info_text"
+                    text "{u}Sideloaded{/u}: [sideloaded]" style "renpy6_android_music_player_info_text"
                     text "{u}Comment{/u}: [comment]" style "renpy6_android_music_player_info_text"
                 else:
-                    text "{u}Album Artist{/u}: [current_soundtrack.albumartist]" style "music_player_info_text"
-                    text "{u}Composer{/u}: [current_soundtrack.composer]" style "music_player_info_text"
-                    text "{u}Genre{/u}: [current_soundtrack.genre]" style "music_player_info_text"
-                    text "{u}Sideloaded{/u}: [current_soundtrack.sideloaded]" style "music_player_info_text"
+                    text "{u}Album Artist{/u}: [albumartist]" style "music_player_info_text"
+                    text "{u}Composer{/u}: [composer]" style "music_player_info_text"
+                    text "{u}Genre{/u}: [genre]" style "music_player_info_text"
+                    text "{u}Sideloaded{/u}: [sideloaded]" style "music_player_info_text"
                     text "{u}Comment{/u}: [comment]" style "music_player_info_text"
 
     on "hide" action With(Dissolve(0.25))    
