@@ -161,15 +161,15 @@ screen new_music_room():
                                     spacing 15
 
                                     imagebutton:
-                                        idle ConditionSwitch("loopSong", "mod_assets/music_player/replayOn.png", 
+                                        idle ConditionSwitch("ost_controls.loopSong", "mod_assets/music_player/replayOn.png", 
                                                             "True", "mod_assets/music_player/replay.png")
                                         hover "mod_assets/music_player/replayHover.png"
-                                        action [ToggleVariable("loopSong", False, True)]
+                                        action [ToggleVariable("ost_controls.loopSong", False, True)]
                                     imagebutton:
-                                        idle ConditionSwitch("randomSong", "mod_assets/music_player/shuffleOn.png", 
+                                        idle ConditionSwitch("ost_controls.randomSong", "mod_assets/music_player/shuffleOn.png", 
                                                             "True", "mod_assets/music_player/shuffle.png")
                                         hover "mod_assets/music_player/shuffleHover.png"
-                                        action [ToggleVariable("randomSong", False, True)]
+                                        action [ToggleVariable("ost_controls.randomSong", False, True)]
                                     imagebutton:
                                         idle "mod_assets/music_player/info.png"
                                         hover "mod_assets/music_player/infoHover.png"
@@ -539,7 +539,7 @@ screen music_info():
                     albumartist = ost_info.get_album_artist()
                     composer = ost_info.get_composer()
                     genre = ost_info.get_genre()
-                    sideloaded = ost_info.get_sideloaded()
+                    sideloaded = ost_info.get_sideload()
                     comment = ost_info.get_description() or None
                 
                 if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
