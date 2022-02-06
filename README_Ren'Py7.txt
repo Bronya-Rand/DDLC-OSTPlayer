@@ -10,7 +10,7 @@ This assumes you already have a copy of DDLC with the mod template installed ove
 
 2. Copy this line to 'screens.rpy' under textbutton _("Load Game").
 
-    textbutton _("OST Player") action [ShowMenu("new_music_room"), Function(ost_start), SensitiveIf(renpy.get_screen("new_music_room") == None)]
+    textbutton _("OST Player") action [ShowMenu("new_music_room"), Function(ost_main.ost_start), SensitiveIf(renpy.get_screen("new_music_room") == None)]
 
 3. (Recommended but Optional) Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
     a. Copy 'riffic-bold.ttf' in the Fonts folder and paste it in 'mod_assets/music_player'.
