@@ -40,9 +40,10 @@ This allows the user to play the mods' soundtrack alongside a players' own music
    1. `priority` has been removed.
    2. Manually defined songs require the following to be added after you fill out it's details.
       ```py
-      manualDefineList.append(Wake_Up_Unchanged)
+      ost_song_assign.manualList.append(Wake_Up_Unchanged)
       ```
-      > Change `Wake_Up_Unchanged` to your song variable
+      > Change `Wake_Up_Unchanged` to your song variable.
+      > Using `manualDefineList.append` still works, however it is recommended to use the above over it.
 
    See _manualtracks.rpy_ for a example or _audio_code.rpy_ for what can be defined.
 
