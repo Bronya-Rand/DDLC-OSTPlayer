@@ -484,21 +484,25 @@ init python:
                         lines = a.readlines()
 
                 jpgbytes = bytes("\\xff\\xd8\\xff")
+                pngbytes = bytes("\\x89PNG")
                 utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n")
 
-                jpgmatch = re.search(jpgbytes, image_data) 
+                jpgmatch = re.search(jpgbytes, image_data)
+                pngmatch = re.search(pngbytes, image_data) 
                 utfmatch = re.search(utfbytes, image_data) 
 
                 if jpgmatch:
                     cover_formats=".jpg" 
-                else:
+                elif pngmatch:
                     cover_formats=".png" 
 
                     if utfmatch: # addresses itunes cover descriptor fixes
                         logging.warning("Improper PNG data was found. Repairing cover art.")
                         image_data = re.sub(utfbytes, lines[2], image_data)
+                else:
+                    raise TypeError
 
-                coverAlbum = re.sub(r"(\\|/|\:|\?|\*|\<|\>|\||\[|\])", "", tags.album)
+                coverAlbum = re.sub(r"(\\|/|\:|\?|\*|\<|\>|\||\[|\])", "", tags.album or tags.title)
 
                 if not os.path.exists(os.path.join(gamedir, 'track/covers', coverAlbum + cover_formats)):
                 
