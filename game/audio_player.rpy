@@ -304,94 +304,100 @@ screen new_music_room():
 
 screen music_list_type(type=None):
 
-    frame:
+    drag:
+        drag_name "mlisttype"
+        drag_handle (0, 0, 1.0, 40)
         xsize 470
         ysize 260
         xpos 0.3
         ypos 0.2
 
-        if type is not None:
+        frame:
+
+            if type is not None:
+                hbox:
+                    xalign 0.05 ypos 0.005
+                    textbutton "<-":
+                        text_style "navigation_button_text"
+                        action [Hide("music_list"), ShowMenu("music_list_type")]
+
             hbox:
-                xalign 0.05 ypos 0.005
-                textbutton "<-":
+                ypos 0.005
+                xalign 0.52 
+                text "Music List":
+                    style "music_player_generic_text"
+
+            hbox:
+                ypos 0.005
+                xalign 0.98
+                textbutton "X":
                     text_style "navigation_button_text"
-                    action [Hide("music_list"), ShowMenu("music_list_type")]
+                    action Hide("music_list_type")
 
-        hbox:
-            ypos 0.005
-            xalign 0.52 
-            text "Music List":
-                style "music_player_generic_text"
+            side "c":
+                xpos 0.05
+                ypos 0.2
+                xsize 430
+                ysize 200
 
-        hbox:
-            ypos 0.005
-            xalign 0.98
-            textbutton "X":
-                text_style "navigation_button_text"
-                action Hide("music_list_type")
+                viewport id "mlt":
+                    mousewheel True
+                    draggable True
+                    has vbox
 
-        side "c":
-            xpos 0.05
-            ypos 0.2
-            xsize 430
-            ysize 200
-
-            viewport id "mlt":
-                mousewheel True
-                draggable True
-                has vbox
-
-                if type is None:
-                    textbutton "All Songs":
-                        text_style "music_list_button_text"
-                        action [Hide("music_list_type"), ShowMenu("music_list")]
-
-                    textbutton "Artist":
-                        text_style "music_list_button_text"
-                        action [Hide("music_list_type"), ShowMenu("music_list_type", type="artist")]
-
-                    textbutton "Album Artist":
-                        text_style "music_list_button_text"
-                        action [Hide("music_list_type"), ShowMenu("music_list_type", type="albumartist")]
-
-                    textbutton "Composer":
-                        text_style "music_list_button_text"
-                        action [Hide("music_list_type"), ShowMenu("music_list_type", type="composer")]
-
-                    textbutton "Genre":
-                        text_style "music_list_button_text"
-                        action [Hide("music_list_type"), ShowMenu("music_list_type", type="genre")]
-
-                else:
-                    python:
-                        temp_list = []
-                        for st in soundtracks:
-                            if type == "artist":
-                                if st.author not in temp_list:
-                                    temp_list.append(st.author)
-                            elif type == "albumartist":
-                                if st.albumartist not in temp_list:
-                                    temp_list.append(st.albumartist)
-                            elif type == "composer":
-                                if st.composer not in temp_list:
-                                    temp_list.append(st.composer)
-                            elif type == "genre":
-                                if st.genre not in temp_list:
-                                    temp_list.append(st.genre)
-                        
-                        temp_list = sorted(temp_list)
-
-                    for st in temp_list:
-                        textbutton "[st]":
-                            style "l_list"
+                    if type is None:
+                        textbutton "All Songs":
                             text_style "music_list_button_text"
-                            action [Hide("music_list_type"), ShowMenu("music_list", type=type, arg=st)]
+                            action [Hide("music_list_type"), ShowMenu("music_list")]
+
+                        textbutton "Artist":
+                            text_style "music_list_button_text"
+                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="artist")]
+
+                        textbutton "Album Artist":
+                            text_style "music_list_button_text"
+                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="albumartist")]
+
+                        textbutton "Composer":
+                            text_style "music_list_button_text"
+                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="composer")]
+
+                        textbutton "Genre":
+                            text_style "music_list_button_text"
+                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="genre")]
+
+                    else:
+                        python:
+                            temp_list = []
+                            for st in soundtracks:
+                                if type == "artist":
+                                    if st.author not in temp_list:
+                                        temp_list.append(st.author)
+                                elif type == "albumartist":
+                                    if st.albumartist not in temp_list:
+                                        temp_list.append(st.albumartist)
+                                elif type == "composer":
+                                    if st.composer not in temp_list:
+                                        temp_list.append(st.composer)
+                                elif type == "genre":
+                                    if st.genre not in temp_list:
+                                        temp_list.append(st.genre)
+                            
+                            temp_list = sorted(temp_list)
+
+                        for st in temp_list:
+                            textbutton "[st]":
+                                style "l_list"
+                                text_style "music_list_button_text"
+                                action [Hide("music_list_type"), ShowMenu("music_list", type=type, arg=st)]
                         
     on "hide" action With(Dissolve(0.25))
             
 screen music_list(type=None, arg=None):
 
-    frame:
+    drag:
+        drag_name "mlist"
+        drag_handle (0, 0, 1.0, 40)
         xsize 470
         ysize 260
         xpos 0.3
@@ -417,143 +423,150 @@ screen music_list(type=None, arg=None):
                     
             new_soundtrack_list = sorted(new_soundtrack_list, key=lambda new_soundtrack_list: new_soundtrack_list.name)
 
-        hbox:
-            xalign 0.05 ypos 0.005
-            textbutton "<-":
-                text_style "navigation_button_text"
-                action [Hide("music_list"), ShowMenu("music_list_type", type=type)]
+        frame:
+            hbox:
+                xalign 0.05 ypos 0.005
+                textbutton "<-":
+                    text_style "navigation_button_text"
+                    action [Hide("music_list"), ShowMenu("music_list_type", type=type)]
 
-        hbox:
-            ypos 0.005
-            xalign 0.52 
-            text "Music List":
-                style "music_player_generic_text"
-                size 24
+            hbox:
+                ypos 0.005
+                xalign 0.52 
+                text "Music List":
+                    style "music_player_generic_text"
+                    size 24
 
-        hbox:
-            ypos 0.005
-            xalign 0.98
-            textbutton "X":
-                text_style "navigation_button_text"
-                action Hide("music_list")
+            hbox:
+                ypos 0.005
+                xalign 0.98
+                textbutton "X":
+                    text_style "navigation_button_text"
+                    action Hide("music_list")
 
-        side "c":
-            xpos 0.05
-            ypos 0.2
-            xsize 430
-            ysize 200
+            side "c":
+                xpos 0.05
+                ypos 0.2
+                xsize 430
+                ysize 200
 
-            viewport id "ml":
-                draggable True
-                mousewheel True
-                has vbox
+                viewport id "ml":
+                    draggable True
+                    mousewheel True
+                    has vbox
 
-                for nst in new_soundtrack_list:
-                    textbutton "[nst.name]":
-                        style "l_list"
-                        text_style "music_list_button_text"
-                        action [Hide("music_list"), Function(ost_info.set_current_soundtrack, nst), Play("music_player", nst.path, loop=ost_controls.loopSong, fadein=2.0)]
+                    for nst in new_soundtrack_list:
+                        textbutton "[nst.name]":
+                            style "l_list"
+                            text_style "music_list_button_text"
+                            action [Hide("music_list"), Function(ost_info.set_current_soundtrack, nst), Play("music_player", nst.path, loop=ost_controls.loopSong, fadein=2.0)]
 
     on "hide" action With(Dissolve(0.25))
 
 screen music_settings():
 
-    frame:
+    drag:
+        drag_name "msettings"
+        drag_handle (0, 0, 1.0, 40)
         xsize 470
         ysize 260
         xpos 0.5
         ypos 0.5
 
-        hbox:
-            ypos 0.005
-            xalign 0.52 
-            text "OST-Player Settings":
-                style "music_player_generic_text"
+        frame:
+            hbox:
+                ypos 0.005
+                xalign 0.52 
+                text "OST-Player Settings":
+                    style "music_player_generic_text"
 
-        hbox:
-            ypos 0.005
-            xalign 0.98
-            textbutton "X":
-                text_style "navigation_button_text"
-                action Hide("music_settings")
+            hbox:
+                ypos 0.005
+                xalign 0.98
+                textbutton "X":
+                    text_style "navigation_button_text"
+                    action Hide("music_settings")
 
-        side "c":
-            xpos 0.05
-            ypos 0.2
-            xsize 430
-            ysize 200
+            side "c":
+                xpos 0.05
+                ypos 0.2
+                xsize 430
+                ysize 200
 
-            viewport id "mlt":
-                mousewheel True
-                draggable True
-                has vbox
-                
-                textbutton "Compact Mode":
-                    style "radio_button" 
-                    action [Hide("music_list_type"), Hide("music_list"), Hide("music_info"),
-                        ToggleField(persistent, "listui", False, True)]
+                viewport id "mlt":
+                    mousewheel True
+                    draggable True
+                    has vbox
+                    
+                    textbutton "Compact Mode":
+                        style "radio_button" 
+                        action [Hide("music_list_type"), Hide("music_list"), Hide("music_info"),
+                            ToggleField(persistent, "listui", False, True)]
 
-                textbutton "Restore Music Channel Music":
-                    style "radio_button" 
-                    action InvertSelected(ToggleField(persistent, "auto_restore_music", False, True))
-                        
-                textbutton "About DDLC OST-Player":
-                    text_style "navigation_button_text" 
-                    action Show("dialog", message="DDLC OST-Player by GanstaKingofSA.\nCopyright © 2020-2022 GanstaKingofSA.", 
-                        ok_action=Hide("dialog"))
+                    textbutton "Restore Music Channel Music":
+                        style "radio_button" 
+                        action InvertSelected(ToggleField(persistent, "auto_restore_music", False, True))
+                            
+                    textbutton "About DDLC OST-Player":
+                        text_style "navigation_button_text" 
+                        action Show("dialog", message="DDLC OST-Player by GanstaKingofSA.\nCopyright © 2020-2022 GanstaKingofSA.", 
+                            ok_action=Hide("dialog"))
 
     on "hide" action With(Dissolve(0.25))    
 
 screen music_info():
 
-    frame:
+    drag:
+        drag_name "minfo"
+        drag_handle (0, 0, 1.0, 40)
         xsize 480
         ysize 260
         xpos 0.4
         ypos 0.4
 
-        hbox:
-            ypos 0.005
-            xalign 0.52 
-            text "Music Info" style "music_player_generic_text"
+        frame:
+            hbox:
+                ypos 0.005
+                xalign 0.52 
+                text "Music Info" style "music_player_generic_text"
 
-        hbox:
-            ypos 0.005
-            xalign 0.98
-            textbutton "X":
-                text_style "navigation_button_text"
-                action Hide("music_info")
+            hbox:
+                ypos 0.005
+                xalign 0.98
+                textbutton "X":
+                    text_style "navigation_button_text"
+                    action Hide("music_info")
 
-        side "c":
-            xpos 0.05
-            ypos 0.2
-            xsize 460
-            ysize 200
+            side "c":
+                xpos 0.05
+                ypos 0.2
+                xsize 460
+                ysize 200
 
-            viewport id "mi":
-                mousewheel True
-                draggable True
-                has vbox
+                viewport id "mi":
+                    mousewheel True
+                    draggable True
+                    has vbox
 
-                python:
-                    albumartist = ost_info.get_album_artist()
-                    composer = ost_info.get_composer()
-                    genre = ost_info.get_genre()
-                    sideloaded = ost_info.get_sideload()
-                    comment = ost_info.get_description() or None
-                
-                if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
-                    text "{u}Album Artist{/u}: [albumartist]" style "renpy6_android_music_player_info_text"
-                    text "{u}Composer{/u}: [composer]" style "renpy6_android_music_player_info_text"
-                    text "{u}Genre{/u}: [genre]" style "renpy6_android_music_player_info_text"
-                    text "{u}Sideloaded{/u}: [sideloaded]" style "renpy6_android_music_player_info_text"
-                    text "{u}Comment{/u}: [comment]" style "renpy6_android_music_player_info_text"
-                else:
-                    text "{u}Album Artist{/u}: [albumartist]" style "music_player_info_text"
-                    text "{u}Composer{/u}: [composer]" style "music_player_info_text"
-                    text "{u}Genre{/u}: [genre]" style "music_player_info_text"
-                    text "{u}Sideloaded{/u}: [sideloaded]" style "music_player_info_text"
-                    text "{u}Comment{/u}: [comment]" style "music_player_info_text"
+                    python:
+                        albumartist = ost_info.get_album_artist()
+                        composer = ost_info.get_composer()
+                        genre = ost_info.get_genre()
+                        sideloaded = ost_info.get_sideload()
+                        comment = ost_info.get_description() or None
+                    
+                    if renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187):
+                        text "{u}Album Artist{/u}: [albumartist]" style "renpy6_android_music_player_info_text"
+                        text "{u}Composer{/u}: [composer]" style "renpy6_android_music_player_info_text"
+                        text "{u}Genre{/u}: [genre]" style "renpy6_android_music_player_info_text"
+                        text "{u}Sideloaded{/u}: [sideloaded]" style "renpy6_android_music_player_info_text"
+                        text "{u}Comment{/u}: [comment]" style "renpy6_android_music_player_info_text"
+                    else:
+                        text "{u}Album Artist{/u}: [albumartist]" style "music_player_info_text"
+                        text "{u}Composer{/u}: [composer]" style "music_player_info_text"
+                        text "{u}Genre{/u}: [genre]" style "music_player_info_text"
+                        text "{u}Sideloaded{/u}: [sideloaded]" style "music_player_info_text"
+                        text "{u}Comment{/u}: [comment]" style "music_player_info_text"
 
     on "hide" action With(Dissolve(0.25))    
 
