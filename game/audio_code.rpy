@@ -18,7 +18,7 @@ init python:
     renpy.store.build.classify("game/track/**", "track all")
 
     # Creation of Music Room and Code Setup
-    ostVersion = 3.0
+    ostVersion = 3.01
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
 
     if renpy.windows:
@@ -655,7 +655,8 @@ init python:
             if os.path.exists(self.logdir):
                 os.remove(self.logdir)
 
-            self.ost_log_start()
+            if persistent.debugging:
+                self.ost_log_start()
 
             logging.info("Making the \"track\" folder in " + gamedir + " if it's not present.")
             try: os.mkdir(os.path.join(gamedir, "track"))
@@ -695,7 +696,8 @@ init python:
 
         def ost_quit(self):
             ost_controls.check_paused_state()
-            self.ost_log_stop()
+            if persistent.debugging:
+                self.ost_log_stop()
 
     ost_main = OSTPlayerMain()
     renpy.game.preferences.set_mute("music", False)

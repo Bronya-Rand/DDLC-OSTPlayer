@@ -3,6 +3,8 @@
 default persistent.listui = False
 # Automatically reverts the music playing before the player launched.
 default persistent.auto_restore_music = True
+# Starts OST logging for debugging purposes.
+default persistent.debugging = False
 
 image readablePos = DynamicDisplayable(renpy.curry(ost_info.music_pos)("song_progress_text"))
 image readableDur = DynamicDisplayable(renpy.curry(ost_info.music_dur)("song_duration_text"))
