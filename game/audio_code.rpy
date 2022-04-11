@@ -35,8 +35,6 @@ init python:
     # Lists for holding media types
     soundtracks = []
 
-    renpy.random.Random()
-
     class OSTPlayerInfo():
         def __init__(self, channel="music_player"):
             self.current_soundtrack = None
@@ -261,7 +259,7 @@ init python:
             if soundtrack_position >= ost_info.get_duration(): 
                 self.pausedAt = False
                 if self.randomSong:
-                    self.random_song()
+                    self.random_track()
                 else:
                     self.next_track()
             else:
@@ -483,23 +481,16 @@ init python:
                     with renpy.exports.file("python-packages/binaries.txt") as a:
                         lines = a.readlines()
 
-                jpgbytes = bytes("\\xff\\xd8\\xff")
-                pngbytes = bytes("\\x89PNG")
-                utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n")
+                for line in image_data.splitlines():
+                    if "PNG" in line:
+                        cover_formats = ".png"
+                        line.replace(line, lines[2])
+                    elif "JFIF" in line:
+                        cover_formats = ".jpg"
+                        line.replace(line, lines[1])
+                    break
 
-                jpgmatch = re.search(jpgbytes, image_data)
-                pngmatch = re.search(pngbytes, image_data) 
-                utfmatch = re.search(utfbytes, image_data) 
-
-                if jpgmatch:
-                    cover_formats=".jpg" 
-                elif pngmatch:
-                    cover_formats=".png" 
-
-                    if utfmatch: # addresses itunes cover descriptor fixes
-                        logging.warning("Improper PNG data was found. Repairing cover art.")
-                        image_data = re.sub(utfbytes, lines[2], image_data)
-                else:
+                if cover_formats is None:
                     raise TypeError
 
                 coverAlbum = re.sub(r"(\\|/|\:|\?|\*|\<|\>|\||\[|\])", "", tags.album or tags.title)
