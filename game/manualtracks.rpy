@@ -1,17 +1,18 @@
 
 init python:    
     ## Manual Soundtracks Options
-    #     name - The song' name
-    #     author - The song' artist
-    #     path - The path to the song
-    #     album - The song' album
+    #     name - The songs' name [REQUIRED]
+    #     author - The songs' artist [REQUIRED]
+    #     path - The path to the song [REQUIRED]
+    #     album - The songs' album
     #     albumartist - The song' album artist
-    #     composer - The song' composer
-    #     genre - The song' genre
+    #     composer - The songs' composer (person who made the music piece)
+    #     genre - The songs' genre
     #     description - The song' description/comment
-    #     cover_art - The path to the song' cover art
+    #     cover_art - The path to the songs' cover art [REQUIRED] or 'False'
+    #                 (without quotes) if this song has no cover art
     #     unlocked = 'True' (without quotes) for unlocked or 
-    #                renpy.seen_audio("bgm/example.ogg") for True/False 
+    #                renpy.seen_audio("path/to/song") for True/False 
     #                determination
 
     your_reality = soundtrack(
