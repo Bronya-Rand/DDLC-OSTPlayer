@@ -498,7 +498,7 @@ init python:
                         logging.warning("Improper PNG data was found. Repairing cover art.")
                         image_data = re.sub(utfbytes, lines[2], image_data)
                 else:
-                    raise TypeError
+                    raise UnknownImageFileType
 
                 coverAlbum = re.sub(r"(\\|/|\:|\?|\*|\<|\>|\||\[|\])", "", tags.album or tags.title)
 
@@ -510,7 +510,7 @@ init python:
                 art = "track/covers/" + coverAlbum + cover_formats
                 logging.info("Obtained album cover for " + path + ".")
                 return art
-            except TypeError:
+            except UnknownImageFileType:
                 logging.warning("Cover art could not be obtained/written to the \"covers\" directory.")
                 return None
             except:

@@ -16,9 +16,7 @@ image albumName = DynamicDisplayable(renpy.curry(ost_info.dynamic_album_text)(If
                         renpy.android and renpy.version_tuple == (6, 99, 12, 4, 2187), 
                         "renpy6_android_song_author_text", 
                         "music_player_song_author_text")))
-image playPauseButton = DynamicDisplayable(ost_controls.auto_play_pause_button)
 image coverArt = DynamicDisplayable(ost_info.refresh_cover_data) 
-image playPauseButtonList = DynamicDisplayable(ost_controls.auto_play_pause_list_button)
 
 screen new_music_room():
 
@@ -306,7 +304,7 @@ screen new_music_room():
         SetMute("music", True))]
     on "replaced" action [Hide("music_settings"), Hide("music_list"), Hide("music_list_type"), 
         Hide("music_info"), Function(ost_main.ost_log_stop), If(persistent.auto_restore_music,
-        [Stop("music_player", fadeout=1.0), SetMute("music", False), Play("music", ost_main.prevTrack, fadein=1.0)],
+        [Function(ost_controls.pause_music), SetMute("music", False), Play("music", ost_main.prevTrack, fadein=1.0)],
         SetMute("music", True))]
 
 screen music_list_type(type=None):
