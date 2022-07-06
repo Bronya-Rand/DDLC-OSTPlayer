@@ -475,10 +475,15 @@ init python:
                 else:
                     with renpy.exports.file("python-packages/binaries.txt") as a:
                         lines = a.readlines()
-
-                jpgbytes = bytes("\\xff\\xd8\\xff", encoding='utf8')
-                pngbytes = bytes("\\x89PNG", encoding='utf8')
-                utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n", encoding='utf8')
+                
+                if renpy.version_tuple > (8, 0, 0, 22062402):
+                    jpgbytes = bytes("\\xff\\xd8\\xff", encoding='utf8')
+                    pngbytes = bytes("\\x89PNG", encoding='utf8')
+                    utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n", encoding='utf8')
+                else:
+                    jpgbytes = bytes("\\xff\\xd8\\xff")
+                    pngbytes = bytes("\\x89PNG")
+                    utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n")
 
                 jpgmatch = re.search(jpgbytes, image_data)
                 pngmatch = re.search(pngbytes, image_data) 
