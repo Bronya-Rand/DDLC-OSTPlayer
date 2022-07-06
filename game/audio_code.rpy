@@ -20,7 +20,7 @@ init python:
     renpy.store.build.classify("game/track/**", "track all")
 
     # Creation of Music Room and Code Setup
-    ostVersion = 3.0
+    ostVersion = 3.1
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
 
     if renpy.windows:
@@ -476,28 +476,16 @@ init python:
                     with renpy.exports.file("python-packages/binaries.txt") as a:
                         lines = a.readlines()
                 
-                if renpy.version_tuple > (8, 0, 0, 22062402):
-                    jpgbytes = bytes("\\xff\\xd8\\xff", encoding='utf8')
-                    pngbytes = bytes("\\x89PNG", encoding='utf8')
-                    utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n", encoding='utf8')
-                else:
-                    jpgbytes = bytes("\\xff\\xd8\\xff")
-                    pngbytes = bytes("\\x89PNG")
-                    utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n")
+                for line in image_data.splitlines():
+                    if b"PNG" in line:
+                        cover_formats = ".png"
+                        line.replace(line, lines[2])
+                    elif b"JFIF" in line:
+                        cover_formats = ".jpg"
+                        line.replace(line, lines[1])
+                    break
 
-                jpgmatch = re.search(jpgbytes, image_data)
-                pngmatch = re.search(pngbytes, image_data) 
-                utfmatch = re.search(utfbytes, image_data) 
-
-                if jpgmatch:
-                    cover_formats=".jpg" 
-                elif pngmatch:
-                    cover_formats=".png" 
-
-                    if utfmatch: # addresses itunes cover descriptor fixes
-                        logging.warning("Improper PNG data was found. Repairing cover art.")
-                        image_data = re.sub(utfbytes, lines[2], image_data)
-                else:
+                if cover_formats is None:
                     raise UnknownImageFileType
 
                 coverAlbum = re.sub(r"(\\|/|\:|\?|\*|\<|\>|\||\[|\])", "", tags.album or tags.title)
