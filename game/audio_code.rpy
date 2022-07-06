@@ -427,6 +427,7 @@ init python:
 
         def set_pos(self, value):
             if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
+                if ost_controls.pausedState: ost_controls.pausedState = False
                 renpy.audio.music.play("<from {}>".format(value) + ost_info.get_path(),
                     self.channel)
                 if ost_controls.get_loop_status():
