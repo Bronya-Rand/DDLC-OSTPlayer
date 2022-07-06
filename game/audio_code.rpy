@@ -11,6 +11,8 @@ init python:
     import threading
     from tinytag import TinyTag
 
+    enable_logging = False
+
     renpy.store.build.archive("track", "mod")
     renpy.store.build.classify("game/RPASongMetadata.json", "track all")
     renpy.store.build.classify("game/python-packages/binaries.txt", "mod all")
@@ -652,11 +654,13 @@ init python:
                 self.logdir = os.path.join(os.environ["ANDROID_PUBLIC"], "ost_log.txt")
             else:
                 self.logdir = os.path.join(config.basedir, "ost_log.txt")
-
-            if os.path.exists(self.logdir):
-                os.remove(self.logdir)
-
-            self.ost_log_start()
+            
+            if enable_logging:
+            
+                if os.path.exists(self.logdir):
+                    os.remove(self.logdir)
+                
+                self.ost_log_start()
 
             logging.info("Making the \"track\" folder in " + gamedir + " if it's not present.")
             try: os.mkdir(os.path.join(gamedir, "track"))
@@ -696,7 +700,8 @@ init python:
 
         def ost_quit(self):
             ost_controls.check_paused_state()
-            self.ost_log_stop()
+            if enable_logging:
+                self.ost_log_stop()
 
     ost_main = OSTPlayerMain()
     renpy.game.preferences.set_mute("music", False)
