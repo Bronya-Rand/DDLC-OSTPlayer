@@ -220,23 +220,11 @@ init python:
         def get_shuffle_status(self):
             return self.randomSong
 
-        def auto_play_pause_button(self, st, at):
-            if renpy.audio.music.is_playing(self.channel):
-                if self.pausedState:
-                    d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png")
-                else:
-                    d = renpy.display.behavior.ImageButton("mod_assets/music_player/pause.png", 
-                                                        action=self.pause_music)
-            else:
-                d = renpy.display.behavior.ImageButton("mod_assets/music_player/play.png", 
-                                                    action=self.play_music)
-            return d, 0.20
-
         def pause_music(self):
-            self.pausedState = True
-
             if not renpy.audio.music.is_playing(self.channel):
                 return
+
+            self.pausedState = True
             
             soundtrack_position = (renpy.audio.music.get_pos(self.channel) or 0.0) + 1.6
 
@@ -377,7 +365,7 @@ init python:
             return pos, duration
 
         def get_song_options_status(self):
-            return ost_controls.get_loop_status(), ost_controls.get_shuffle_status()
+            return ost_controls.loopSong, ost_controls.randomSong
 
         def ost_thread_main(self):
             while True:
@@ -399,6 +387,8 @@ init python:
                                 ost_controls.next_track()
                     except:
                         pass
+
+            self.ost_thread.stop()                
 
     @renpy.exports.pure
     class AdjustableAudioPositionValue(renpy.ui.BarValue):
@@ -432,7 +422,7 @@ init python:
                 if ost_controls.pausedState: ost_controls.pausedState = False
                 renpy.audio.music.play("<from {}>".format(value) + ost_info.get_path(),
                     self.channel)
-                if ost_controls.get_loop_status():
+                if ost_controls.loopSong:
                     renpy.audio.music.queue(ost_info.get_path(), self.channel, True)
 
         def periodic(self, st):
@@ -486,9 +476,9 @@ init python:
                     with renpy.exports.file("python-packages/binaries.txt") as a:
                         lines = a.readlines()
 
-                jpgbytes = bytes("\\xff\\xd8\\xff")
-                pngbytes = bytes("\\x89PNG")
-                utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n")
+                jpgbytes = bytes("\\xff\\xd8\\xff", encoding='utf8')
+                pngbytes = bytes("\\x89PNG", encoding='utf8')
+                utfbytes = bytes("o\\x00v\\x00e\\x00r\\x00\\x00\\x00\\x89PNG\\r\\n", encoding='utf8')
 
                 jpgmatch = re.search(jpgbytes, image_data)
                 pngmatch = re.search(pngbytes, image_data) 
@@ -518,6 +508,8 @@ init python:
             except TypeError:
                 logging.warning("Cover art could not be obtained/written to the \"covers\" directory.")
                 return None
+            except:
+                raise
 
         def scan_song(self):
             logging.info("Scanning music directories.")

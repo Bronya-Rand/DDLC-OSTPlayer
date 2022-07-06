@@ -18,6 +18,7 @@ image albumName = DynamicDisplayable(renpy.curry(ost_info.dynamic_album_text)(If
                         "music_player_song_author_text")))
 image playPauseButton = DynamicDisplayable(ost_controls.auto_play_pause_button)
 image coverArt = DynamicDisplayable(ost_info.refresh_cover_data) 
+image playPauseButtonList = DynamicDisplayable(ost_controls.auto_play_pause_list_button)
 
 screen new_music_room():
 
@@ -92,7 +93,10 @@ screen new_music_room():
                                     hover "mod_assets/music_player/backwardHover.png"
                                     action [SensitiveIf(renpy.music.is_playing(channel='music_player')), Function(ost_controls.rewind_music)]
 
-                                add "playPauseButton"
+                                imagebutton:
+                                    idle If(ost_controls.pausedState, "mod_assets/music_player/pause.png", "mod_assets/music_player/play.png")
+                                    hover If(ost_controls.pausedState, "mod_assets/music_player/play.png", "mod_assets/music_player/pause.png")
+                                    action If(ost_controls.pausedState, Function(ost_controls.play_music), Function(ost_controls.pause_music))
 
                                 imagebutton:
                                     idle "mod_assets/music_player/forward.png"
@@ -204,15 +208,18 @@ screen new_music_room():
                     frame:
                         xsize 900
                         hbox:
-                            imagebutton:
-                                xsize 66 ysize 66
-                                idle Transform(ConditionSwitch(ost_info.get_current_soundtrack() == st, If(ost_controls.pausedState, "mod_assets/music_player/music_list_pause.png", 
-                                    "mod_assets/music_player/music_list_play.png"), "True", st.cover_art), size=(64, 64))
-                                hover Transform(ConditionSwitch(ost_info.get_current_soundtrack() == st, If(ost_controls.pausedState, "mod_assets/music_player/music_list_play.png", 
-                                    "mod_assets/music_player/music_list_pause.png"), "True", "mod_assets/music_player/music_list_play.png"), size=(64, 64))
-                                action If(ost_info.get_current_soundtrack() == st, If(ost_controls.pausedState, Function(ost_controls.play_music), Function(ost_controls.pause_music)), 
-                                    [SetVariable("ost_controls.pausedState", False), Function(ost_info.set_current_soundtrack, st), Play("music_player", st.path, loop=ost_controls.loopSong, 
-                                    fadein=2.0)])
+                            if ost_info.get_current_soundtrack() == st:
+                                imagebutton:
+                                    xsize 66 ysize 66
+                                    idle Transform(If(ost_controls.pausedState, "mod_assets/music_player/music_list_pause.png", "mod_assets/music_player/music_list_play.png"), size=(64, 64))
+                                    hover Transform(If(ost_controls.pausedState, "mod_assets/music_player/music_list_play.png", "mod_assets/music_player/music_list_pause.png"), size=(64, 64))
+                                    action If(ost_controls.pausedState, Function(ost_controls.play_music), Function(ost_controls.pause_music))
+                            else:
+                                imagebutton:
+                                    xsize 66 ysize 66
+                                    idle Transform(st.cover_art, size=(64, 64))
+                                    hover Transform("mod_assets/music_player/music_list_play.png", size=(64, 64))
+                                    action [SetVariable("ost_controls.pausedState", False), Function(ost_info.set_current_soundtrack, st), Play("music_player", st.path, loop=ost_controls.loopSong, fadein=2.0)]
 
                             null width 15
 
