@@ -468,6 +468,9 @@ init python:
             sec = tags.duration
             try:
                 image_data = tags.get_image()
+
+                if image_data is None:
+                    return None
                 
                 if renpy.version_tuple == (6, 99, 12, 4, 2187) and renpy.android:
                     with io.open(gamedir + "/binaries.txt", "rb") as a:
