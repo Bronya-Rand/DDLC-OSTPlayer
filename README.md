@@ -8,7 +8,7 @@ A heavily revamped version of Nikso's Soundtrack Player for DDLC.
    <img src=".github/assets/OSTPlayerLogo.png" alt="OST Player Logo" width=240x> 
 </p>
 
-**DISCLAIMER:** This is not afiliated or endorsed by Team Salvato or Nikso. The Scattered Stars <u>logo</u> in `Wake Up Unchanged` is not free to use, but is only allowed in this build as a display to the soundtrack player. If you plan to use this, remove it in your final build.
+**DISCLAIMER:** This is not affiliated nor endorsed by Team Salvato or Nikso. The Scattered Stars <u>logo</u> in `Wake Up Unchanged` is not free to use, but is only allowed in this build as a display to the soundtrack player. If you plan to use the OST Player, remove this song in your final build.
 
 ## What is DDLC OST Player?
 
