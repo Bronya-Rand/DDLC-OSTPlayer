@@ -14,9 +14,9 @@ This assumes you already have a copy of DDLC with the mod template installed ove
 
 3. (Recommended but Optional) Download the Riffic-Bold font from Fontsize here: https://www.fontspring.com/fonts/inky-type/riffic/riffic-bold
     a. Copy 'riffic-bold.ttf' in the Fonts folder and paste it in 'mod_assets/music_player'.
-    b. Open 'audio_player.rpy' and remove the # symbol in front of line 556.
+    b. Open 'audio_styles.rpy' and remove the # symbol in front of line 4 and line 90.
 
-4. Add music to the track folder or define them manually in 'manualtracks.rpy'.
+4. Add music to the 'track' folder (located inside DDLC's game folder) or define them manually in 'manualtracks.rpy' with the given steps.
 5. Run DDLC and enjoy!
 
 Credits!

@@ -87,6 +87,7 @@ style music_window_text is renpy_generic_text:
 
 style music_settings_label_text:
     font "gui/font/RifficFree-Bold.ttf"
+    #font "mod_assets/music_player/riffic-bold.ttf"
     size 22
     color "#fff"
     outlines [(4, text_outline_color, 0, 0), (2, text_outline_color, 2, 2)]
