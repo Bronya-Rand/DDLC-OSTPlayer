@@ -10,15 +10,14 @@ init python:
     import json
     import threading
     from tinytag import TinyTag
-    import time
 
     enable_logging = False
-    
-    try:
-        RPC
-        enable_discord_rpc = True
-    except NameError:
-        enable_discord_rpc = False
+
+    renpy.store.build.archive("track", "mod")
+    renpy.store.build.classify("game/RPASongMetadata.json", "track all")
+    renpy.store.build.classify("game/python-packages/binaries.txt", "mod all")
+    renpy.store.build.classify("game/python-packages/tinytag.py", "mod all")
+    renpy.store.build.classify("game/track/**", "track all")
 
     # Creation of Music Room and Code Setup
     ostVersion = 3.2
@@ -26,6 +25,13 @@ init python:
 
     if renpy.windows:
         gamedir = renpy.config.gamedir.replace("\\", "/")
+    elif renpy.android:
+        try: os.mkdir(os.path.join(os.environ["ANDROID_PUBLIC"], "game"))
+        except: pass
+        gamedir = os.path.join(os.environ["ANDROID_PUBLIC"], "game")
+        if renpy.version_tuple == (6, 99, 12, 4, 2187):
+            try: file(gamedir + "/RPASongMetadata.json", "r")
+            except: open(gamedir + "/RPASongMetadata.json", "w").write(renpy.file("RPASongMetadata.json").read())
     else:
         gamedir = renpy.config.gamedir
 
