@@ -52,10 +52,10 @@ screen new_music_room():
                         xalign 0.5
                         if not persistent.listui:
                             textbutton "Music List":
-                                action [ShowMenu("music_list_type"), With(Dissolve(0.25))]
+                                action [Show("music_list_type"), With(Dissolve(0.25))]
                                 
                         textbutton "Settings":
-                            action [ShowMenu("music_settings"), With(Dissolve(0.25))]
+                            action [Show("music_settings"), With(Dissolve(0.25))]
 
             elif persistent.listui:
                 hbox:
@@ -109,11 +109,11 @@ screen new_music_room():
                             imagebutton:
                                 idle "mod_assets/music_player/info.png"
                                 hover "mod_assets/music_player/infoHover.png"
-                                action [ShowMenu("music_info"), With(Dissolve(0.25))]
+                                action [Show("music_info"), With(Dissolve(0.25))]
                             imagebutton:
                                 idle "mod_assets/music_player/settings.png"
                                 hover "mod_assets/music_player/settingsHover.png"
-                                action [ShowMenu("music_settings"), With(Dissolve(0.25))]
+                                action [Show("music_settings"), With(Dissolve(0.25))]
                             imagebutton:
                                 idle "mod_assets/music_player/refreshList.png"
                                 hover "mod_assets/music_player/refreshHover.png"
@@ -203,15 +203,15 @@ screen new_music_room():
                             imagebutton:
                                 idle "mod_assets/music_player/info.png"
                                 hover "mod_assets/music_player/infoHover.png"
-                                action [ShowMenu("music_info"), With(Dissolve(0.25))]
+                                action [Show("music_info"), With(Dissolve(0.25))]
                             imagebutton:
                                 idle "mod_assets/music_player/musicwindow.png"
                                 hover "mod_assets/music_player/musicwindowHover.png"
-                                action [ShowMenu("music_list_type"), With(Dissolve(0.25))]
+                                action [Show("music_list_type"), With(Dissolve(0.25))]
                             imagebutton:
                                 idle "mod_assets/music_player/settings.png"
                                 hover "mod_assets/music_player/settingsHover.png"
-                                action [ShowMenu("music_settings"), With(Dissolve(0.25))]
+                                action [Show("music_settings"), With(Dissolve(0.25))]
                             imagebutton:
                                 idle "mod_assets/music_player/refreshList.png"
                                 hover "mod_assets/music_player/refreshHover.png"
@@ -346,7 +346,7 @@ screen music_list_type(type=None):
                     xalign 0.05 ypos 0.005
                     textbutton "<-":
                         text_style "navigation_button_text"
-                        action [Hide("music_list"), ShowMenu("music_list_type")]
+                        action [Hide("music_list"), Show("music_list_type")]
 
             hbox:
                 ypos 0.005
@@ -373,19 +373,19 @@ screen music_list_type(type=None):
 
                     if type is None:
                         textbutton "All Songs":
-                            action [Hide("music_list_type"), ShowMenu("music_list")]
+                            action [Hide("music_list_type"), Show("music_list")]
 
                         textbutton "Artist":
-                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="artist")]
+                            action [Show("music_list_type", type="artist")]
 
                         textbutton "Album Artist":
-                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="albumartist")]
+                            action [Show("music_list_type", type="albumartist")]
 
                         textbutton "Composer":
-                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="composer")]
+                            action [Show("music_list_type", type="composer")]
 
                         textbutton "Genre":
-                            action [Hide("music_list_type"), ShowMenu("music_list_type", type="genre")]
+                            action [Show("music_list_type", type="genre")]
 
                     else:
                         python:
@@ -408,7 +408,7 @@ screen music_list_type(type=None):
 
                         for st in temp_list:
                             textbutton "[st]":
-                                action [Hide("music_list_type"), ShowMenu("music_list", type=type, arg=st)]
+                                action [Hide("music_list_type"), Show("music_list", type=type, arg=st)]
                         
     on "hide" action With(Dissolve(0.25))
             
@@ -449,7 +449,7 @@ screen music_list(type=None, arg=None):
                 xalign 0.05 ypos 0.005
                 textbutton "<-":
                     text_style "navigation_button_text"
-                    action [Hide("music_list"), ShowMenu("music_list_type", type=type)]
+                    action [Hide("music_list"), Show("music_list_type", type=type)]
 
             hbox:
                 ypos 0.005
