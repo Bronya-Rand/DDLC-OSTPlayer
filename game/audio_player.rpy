@@ -4,7 +4,7 @@ default persistent.listui = False
 # Automatically reverts the music playing before the player launched.
 default persistent.auto_restore_music = True
 # Add a fadein/out to the track similar to Poweramp or music players with one.
-default persistent.fadein = True
+default persistent.fadein = False
 
 image readablePos = DynamicDisplayable(ost_info.music_pos)
 image readableDur = DynamicDisplayable(ost_info.music_dur)
@@ -527,11 +527,11 @@ screen music_settings():
 
                     label "Player"
                     vbox:
-                        textbutton "Restore Music Channel Music":
+                        textbutton "Restore Original Music On Exit":
                             style "radio_button" 
                             action InvertSelected(ToggleField(persistent, "auto_restore_music", False, True))
                         
-                        textbutton "Fade In/Out":
+                        textbutton "Song Fade In/Out":
                             style "radio_button" 
                             action InvertSelected(ToggleField(persistent, "fadein", False, True))
                             
