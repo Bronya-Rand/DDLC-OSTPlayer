@@ -9,8 +9,8 @@ init python:
     #     composer - The songs' composer (person who made the music piece)
     #     genre - The songs' genre
     #     description - The song' description/comment
-    #     cover_art - The path to the songs' cover art [REQUIRED] or 'False'
-    #                 (without quotes) if this song has no cover art
+    #     cover_art - The path to the songs' cover art or 'False'
+    #                 (without quotes) if this song has no cover art [REQUIRED]
     #     unlocked = 'True' (without quotes) for unlocked or 
     #                renpy.seen_audio("path/to/song") for True/False 
     #                determination

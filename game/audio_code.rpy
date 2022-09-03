@@ -20,7 +20,7 @@ init python:
     renpy.store.build.classify("game/track/**", "track all")
 
     # Creation of Music Room and Code Setup
-    ostVersion = 3.1
+    ostVersion = 3.2
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
 
     if renpy.windows:
@@ -29,8 +29,9 @@ init python:
         try: os.mkdir(os.path.join(os.environ["ANDROID_PUBLIC"], "game"))
         except: pass
         gamedir = os.path.join(os.environ["ANDROID_PUBLIC"], "game")
-        try: file(gamedir + "/RPASongMetadata.json", "r")
-        except: open(gamedir + "/RPASongMetadata.json", "w").write(renpy.file("RPASongMetadata.json").read())
+        if renpy.version_tuple == (6, 99, 12, 4, 2187):
+            try: file(gamedir + "/RPASongMetadata.json", "r")
+            except: open(gamedir + "/RPASongMetadata.json", "w").write(renpy.file("RPASongMetadata.json").read())
     else:
         gamedir = renpy.config.gamedir
 
@@ -135,73 +136,79 @@ init python:
         def get_path(self):
             return self.current_soundtrack.path
 
-        def music_pos(self, style_name, st, at):
+        def music_pos(self, st, at):
             readableTime = self.convert_time(self.get_pos())
             
             if persistent.listui: return renpy.text.text.Text(readableTime,
-                style=style_name, substitute=False, size=16), 0.20
-            else: return renpy.text.text.Text(readableTime, style=style_name), 0.20
+                style="song_progress_text", size=16), 0.20
+            return renpy.text.text.Text(readableTime, style="song_progress_text"), 0.20
 
-        def music_dur(self, style_name, st, at):
+        def music_dur(self, st, at):
             readableDuration = self.convert_time(self.get_duration()) 
 
             if persistent.listui: return renpy.text.text.Text(readableDuration, 
-                style=style_name, substitute=False, size=16), 0.20
-            else: return renpy.text.text.Text(readableDuration, style=style_name), 0.20
+                style="song_duration_text", size=16), 0.20
+            return renpy.text.text.Text(readableDuration, style="song_duration_text"), 0.20
 
-        def dynamic_title_text(self, style_name, st, at):
-            title = self.get_title()
-
+        def dynamic_title_text(self, st, at):
             if persistent.listui:
-                return renpy.text.text.Text(title, style=style_name, substitute=False, 
-                    size=20), 0.20
+                return renpy.text.text.Text(
+                    (
+                        (self.get_title()[:52] + "...")
+                        if len(self.get_title()) >= 55
+                        else self.get_title()
+                    ), style="music_player_label_text", substitute=False, 
+                    size=20
+                ), 0.20
 
-            if len(title) <= 21: 
-                songTextSize = int(37) 
-            elif len(title) <= 28:
-                songTextSize = int(29)
-            else:
-                songTextSize = int(23)
-
-            return renpy.text.text.Text(title, style=style_name, substitute=False,
-                size=songTextSize), 0.20
+            return renpy.text.text.Text(
+                (
+                    (self.get_title()[:47] + "...")
+                    if len(self.get_title()) >= 50
+                    else self.get_title()
+                ), style="music_player_label_text", substitute=False
+            ), 0.20
 
         def dynamic_author_text(self, style_name, st, at):
-            author = self.get_artist()
-
             if persistent.listui:
-                return renpy.text.text.Text(author, style=style_name, substitute=False,
-                    size=20), 0.20
+                return renpy.text.text.Text(
+                    (
+                        (self.get_artist()[:62] + "...")
+                        if len(self.get_artist()) >= 65
+                        else self.get_artist()
+                    ), style=style_name, substitute=False, 
+                    size=20
+                ), 0.20
 
-            if len(author) <= 32:
-                authorTextSize = int(25)
-            elif len(author) <= 48:
-                authorTextSize = int(23)
-            else:
-                authorTextSize = int(21)
-
-            return renpy.text.text.Text(author, style=style_name, substitute=False,
-                size=authorTextSize), 0.20
+            return renpy.text.text.Text(
+                (
+                    (self.get_artist()[:42] + "...")
+                    if len(self.get_artist()) >= 45
+                    else self.get_artist()
+                ), style=style_name, substitute=False
+            ), 0.20
 
         def refresh_cover_data(self, st, at):
-            return renpy.display.im.image(self.get_cover_art().replace("[", "\[")), 0.20
+            return renpy.display.im.image(self.get_cover_art()), 0.20
 
         def dynamic_album_text(self, style_name, st, at):
-            album = self.get_album()
-
             if persistent.listui:
-                return renpy.text.text.Text(album, style=style_name, substitute=False, 
-                    size=20), 0.20
+                return renpy.text.text.Text(
+                    (
+                        (self.get_album()[:62] + "...")
+                        if len(self.get_album()) >= 65
+                        else self.get_album()
+                    ), style=style_name, substitute=False, 
+                    size=20
+                ), 0.20
 
-            if len(album) <= 32:
-                albumTextSize = int(25)
-            elif len(album) <= 48:
-                albumTextSize = int(23)
-            else:
-                albumTextSize = int(21)
-
-            return renpy.text.text.Text(album, style=style_name, substitute=False, 
-                size=albumTextSize), 0.20
+            return renpy.text.text.Text(
+                (
+                    (self.get_album()[:42] + "...")
+                    if len(self.get_album()) >= 45
+                    else self.get_album()
+                ), style=style_name, substitute=False
+            ), 0.20
 
     ost_info = OSTPlayerInfo()
 
@@ -213,6 +220,13 @@ init python:
             self.oldVolume = 0.0
             self.randomSong = False
             self.loopSong = False
+
+        def update_discord(self):
+            if not enable_discord_rpc:
+                return
+            
+            RPC.update_details("Listening to " + ost_info.get_title())
+            RPC.update_state("Artist: " + ost_info.get_artist())
 
         def get_loop_status(self):
             return self.loopSong
@@ -226,21 +240,21 @@ init python:
 
             self.pausedState = True
             
-            soundtrack_position = (renpy.audio.music.get_pos(self.channel) or 0.0) + 1.6
+            soundtrack_position = (renpy.audio.music.get_pos(self.channel) or 0.0) + (1.6 if persistent.fadein else 0.0)
 
             if soundtrack_position is not None:
                 self.pausedAt = ("<from " + str(soundtrack_position) + ">" 
                     + ost_info.get_path())
 
-            renpy.audio.music.stop(self.channel, fadeout=2.0)
+            renpy.audio.music.stop(self.channel, fadeout=(2.0 if persistent.fadein else 0.0))
 
         def play_music(self):
             self.pausedState = False
 
             if not self.pausedAt:
-                renpy.audio.music.play(ost_info.get_path(), self.channel, fadein=2.0)
+                renpy.audio.music.play(ost_info.get_path(), self.channel, fadein=(2.0 if persistent.fadein else 0.0))
             else:
-                renpy.audio.music.play(self.pausedAt, self.channel, fadein=2.0)
+                renpy.audio.music.play(self.pausedAt, self.channel, fadein=(2.0 if persistent.fadein else 0.0))
             
         def forward_music(self):
             if not renpy.audio.music.get_pos(self.channel):
@@ -290,6 +304,7 @@ init python:
                 renpy.notify("Now Playing: " + ost_info.get_title() + " - " + ost_info.get_artist())
 
             renpy.audio.music.play(ost_info.get_path(), self.channel, self.loopSong)
+            self.update_discord()
 
         def random_track(self):
             unique = 1
@@ -303,6 +318,7 @@ init python:
                 renpy.notify("Now Playing: " + ost_info.get_title() + " - " + ost_info.get_artist())
 
             renpy.audio.music.play(ost_info.get_path(), self.channel, self.loopSong)
+            self.update_discord() 
 
         def mute_player(self):
             logging.info("Muting the audio player.")
@@ -349,14 +365,12 @@ init python:
                 self.cover_art = cover_art
             self.unlocked = unlocked
 
-    class ExternalOSTMonitor():
+    class ExternalOSTMonitor:
         def __init__(self, channel="music_player"):
             self.channel = channel
-            self.lock = threading.RLock()
             self.periodic_condition = threading.Condition()
-            self.ost_thread = threading.Thread(target=self.ost_thread_main)
-            self.ost_thread.daemon = True
-            self.ost_thread.start()
+            self.t1 = threading.Thread(target=self.periodic, daemon=True)
+            self.t1.start()
 
         def get_pos_duration(self):
             pos = renpy.audio.music.get_pos(self.channel) or 0.0
@@ -367,28 +381,22 @@ init python:
         def get_song_options_status(self):
             return ost_controls.loopSong, ost_controls.randomSong
 
-        def ost_thread_main(self):
+        def periodic(self):
             while True:
                 with self.periodic_condition:
                     self.periodic_condition.wait(.05)
 
-                with self.lock:
-                    try:
-                        pos, duration = self.get_pos_duration()
-                        loopThis, doRandom = self.get_song_options_status()
+                pos, duration = self.get_pos_duration()
+                loopThis, doRandom = self.get_song_options_status()
 
-                        if pos >= duration - 0.20:
-                            if loopThis:
-                                renpy.audio.music.play(ost_info.get_path(), self.channel, 
-                                    loop=True)
-                            elif doRandom:
-                                ost_controls.random_track()
-                            else:
-                                ost_controls.next_track()
-                    except:
-                        pass
-
-            self.ost_thread.stop()                
+                if pos >= duration - 0.20:
+                    if loopThis:
+                        renpy.audio.music.play(ost_info.get_path(), self.channel, 
+                            loop=True)
+                    elif doRandom:
+                        ost_controls.random_track()
+                    else:
+                        ost_controls.next_track() 
 
     @renpy.exports.pure
     class AdjustableAudioPositionValue(renpy.ui.BarValue):
@@ -420,7 +428,7 @@ init python:
         def set_pos(self, value):
             if (self._hovered and pygame_sdl2.mouse.get_pressed()[0]):
                 if ost_controls.pausedState: ost_controls.pausedState = False
-                renpy.audio.music.play("<from {}>".format(value) + ost_info.get_path(),
+                renpy.audio.music.play("<from {}>{}".format(value, ost_info.get_path()),
                     self.channel)
                 if ost_controls.loopSong:
                     renpy.audio.music.queue(ost_info.get_path(), self.channel, True)
