@@ -20,7 +20,7 @@ init python:
     renpy.store.build.classify("game/track/**", "track all")
 
     # Creation of Music Room and Code Setup
-    ostVersion = 3.2
+    ostVersion = 3.21
     renpy.audio.music.register_channel("music_player", mixer="music_player_mixer", loop=False)
 
     if renpy.windows:
@@ -221,13 +221,6 @@ init python:
             self.randomSong = False
             self.loopSong = False
 
-        def update_discord(self):
-            if not enable_discord_rpc:
-                return
-            
-            RPC.update_details("Listening to " + ost_info.get_title())
-            RPC.update_state("Artist: " + ost_info.get_artist())
-
         def get_loop_status(self):
             return self.loopSong
 
@@ -304,7 +297,6 @@ init python:
                 renpy.notify("Now Playing: " + ost_info.get_title() + " - " + ost_info.get_artist())
 
             renpy.audio.music.play(ost_info.get_path(), self.channel, self.loopSong)
-            self.update_discord()
 
         def random_track(self):
             unique = 1
@@ -318,7 +310,6 @@ init python:
                 renpy.notify("Now Playing: " + ost_info.get_title() + " - " + ost_info.get_artist())
 
             renpy.audio.music.play(ost_info.get_path(), self.channel, self.loopSong)
-            self.update_discord() 
 
         def mute_player(self):
             logging.info("Muting the audio player.")
@@ -652,12 +643,14 @@ init python:
                 self.logdir = os.path.join(config.basedir, "ost_log.txt")
             
             if enable_logging:
+                if renpy.get_autoreload():
+                    self.ost_log_stop()
             
                 if os.path.exists(self.logdir):
                     os.remove(self.logdir)
                 
                 self.ost_log_start()
-
+            
             logging.info("Making the \"track\" folder in " + gamedir + " if it's not present.")
             try: os.mkdir(os.path.join(gamedir, "track"))
             except: pass
@@ -668,7 +661,7 @@ init python:
             logging.info("Clearing the covers folder of cover art.")
             for x in os.listdir(os.path.join(gamedir, "track", "covers")):
                 os.remove(os.path.join(gamedir, "track", "covers", x))
-
+            
             ost_song_assign.scan_song()
 
         def get_music_channel_info(self):
