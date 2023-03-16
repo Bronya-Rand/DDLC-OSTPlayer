@@ -14,13 +14,7 @@ style music_player_text:
     outlines[]
     color "#000"
 
-style music_player_button_text is navigation_button_text
-
-# style music_player_hbox:
-#     spacing 25
-
-style music_player_bar:
-    xsize 710
+style ostplayer_bar:
     thumb "gui/slider/horizontal_hover_thumb.png"
 
 style music_player_list_bar is music_player_bar:
